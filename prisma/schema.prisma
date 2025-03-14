@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// Prisma schema
+
+model User {
+  id                   String       @id @default(uuid())
+  username             String
+  email                String       @unique
+  password             String
+  refresh_token        String
+  company_id          String?
+  business_name       String
+  google_id           String?
+  apple_id            String?
+  notifications       Notification[]
+  image_url           String?
+  notification_sending Boolean
+  send_email_alerts   Boolean
+  deadline_notify     Boolean
+  companies           Company[]    @relation("UserCompanies")
+  logs                Log[]
+}
+
+model Company {
+  id                    String        @id @default(uuid())
+  company_profile       String
+  company_name          String
+  business_type         String
+  standard_work_hours   Int
+  weekly_work_limit     Int
+  overtime_rate         Decimal
+  users                 User[]        @relation("UserCompanies")
+  employees             Employee[]
+  daily_total_planned_cost Decimal
+  daily_total_actual_cost Decimal
+}
+
+model Attendance {
+  id              String    @id @default(uuid())
+  employee_id     String
+  status          String    // (present|absent|late)
+  reason          String?   // (sick|vacation|unpaid leave)
+  overtime_hours  Decimal
+  employee        Employee  @relation(fields: [employee_id], references: [id])
+}
+
+model Log {
+  id        String  @id @default(uuid())
+  user_id   String
+  action    String
+  user      User    @relation(fields: [user_id], references: [id])
+}
+
+model Employee {
+  id                    String    @id @default(uuid())
+  username              String
+  trade_position_id     String
+  daily_rate            Decimal
+  created_date         DateTime  @default(now())
+  attendance           Attendance[]
+  contract_finish_date DateTime
+  days_projection      Int
+  budget_baseline      Decimal
+  company_id           String
+  company              Company   @relation(fields: [company_id], references: [id])
+  trade_position       TradePosition @relation(fields: [trade_position_id], references: [id])
+}
+
+model TradePosition {
+  id                String    @id @default(uuid())
+  trade_name       String
+  employees        Employee[]
+  daily_planned_cost Decimal
+  work_days        Int
+  planned_salary   Decimal
+}
+
+model Notification {
+  id        String  @id @default(uuid())
+  message   String
+  user_id   String
+  read      Boolean
+  user      User    @relation(fields: [user_id], references: [id])
+}
+
