@@ -61,6 +61,7 @@ model Log {
   user_id   String
   action    String
   user      User    @relation(fields: [user_id], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Employee {
