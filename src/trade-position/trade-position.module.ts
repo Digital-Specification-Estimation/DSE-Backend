@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TradePositionService } from './trade-position.service';
-import { TradePositionController } from './trade-position.controller';
+import { TradePositionController } from './controllers/trade-position.controller';
+import { TradePositionService } from './services/trade-position.service';
 
 @Module({
   controllers: [TradePositionController],
