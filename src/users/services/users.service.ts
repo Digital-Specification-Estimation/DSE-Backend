@@ -33,7 +33,10 @@ export class UsersService {
     });
     return user;
   }
-
+  async userExists(id: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    return !!user;
+  }
   async updateProfile(updateUserDto: UpdateUserDto, id: string) {
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
