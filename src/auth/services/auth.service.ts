@@ -39,25 +39,23 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
-  signup(createUserDto: CreateUserDto) {
+  async signup(createUserDto: CreateUserDto) {
     const { password } = createUserDto;
+    console.log('->', password);
     let hashedPassword;
     if (password) {
-      hashedPassword = this.passwordService.hashPassword(password);
+      hashedPassword = await this.passwordService.hashPassword(password);
+      console.log(hashedPassword);
       createUserDto.password = hashedPassword;
     }
-    return this.prisma.user.create({ data: createUserDto });
+    return await this.prisma.user.create({ data: createUserDto });
   }
   async validateGoogleUser(profile: any) {
     let user = await this.userService.findByGoogleId(profile.providerId);
 
     if (!user) {
       const newUser: CreateUserDto = {
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        avatarUrl: profile.picture,
-        email: profile.email,
-        googleId: profile.providerId,
+        ...profile,
       };
       user = await this.userService.createUser(newUser);
       return user;

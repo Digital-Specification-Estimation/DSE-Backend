@@ -1,70 +1,63 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  isString,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateUserDto implements User {
   @ApiProperty()
+  @IsOptional()
+  id: string;
   @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
   @ApiProperty()
-  @IsString()
   @IsNotEmpty()
-  lastName: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  phoneNumber?: string;
-
-  @ApiProperty()
+  username: string | null;
   @IsEmail()
-  @IsString()
+  @ApiProperty()
   @IsNotEmpty()
-  email?: string;
-
-  @ApiProperty({ required: false })
+  email: string | null;
+  @ApiProperty()
+  @IsString()
+  @IsStrongPassword()
+  password: string | null;
+  @ApiProperty()
+  @IsOptional()
+  refresh_token: string | null;
+  @ApiProperty()
+  @IsOptional()
+  company_id: string | null;
+  @ApiProperty()
   @IsOptional()
   @IsString()
-  password?: string;
-
-  @ApiProperty({ required: false })
+  business_name: string | null;
+  @ApiProperty()
   @IsOptional()
   @IsString()
-  avatarUrl?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
+  google_id: string | null;
+  @ApiProperty()
   @IsString()
-  googleId?: string;
-
-  @ApiProperty({ required: false })
   @IsOptional()
+  apple_id: string | null;
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  notification_sending: boolean | null;
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  send_email_alerts: boolean | null;
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  deadline_notify: boolean | null;
+  @ApiProperty()
   @IsString()
-  facebookId?: string;
-
-  @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  provider?: string; // 'facebook' or 'google'
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  stripeCustomerId?: string;
-
-  @ApiProperty({ required: false, default: new Date() })
-  @IsOptional()
-  createdAt?: Date;
-
-  @ApiProperty({ required: false, default: new Date() })
-  @IsOptional()
-  updatedAt?: Date;
+  image_url: string | null;
 }
