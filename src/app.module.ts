@@ -15,9 +15,6 @@ import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { ProjectModule } from './project/project.module';
 import { LocationModule } from './location/location.module';
-import { ProjectModule } from './project/project.module';
-import { LocationModule } from './location/location.module';
-
 @Module({
   imports: [
     ServeStaticModule.forRoot({

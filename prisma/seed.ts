@@ -3,96 +3,109 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create users
-  const user1 = await prisma.user.create({
+  // Create a User
+  const user = await prisma.user.create({
     data: {
-      username: 'user1',
-      email: 'user1@example.com',
-      password: 'password123', // Ensure passwords are hashed in real projects
-      refresh_token: 'refresh-token-1',
-      business_name: 'User1 Business',
+      username: 'john_doe',
+      email: 'john.doe@example.com',
+      password: 'hashedpassword123', // In a real scenario, hash the password
+      business_name: 'Doe Enterprises',
       notification_sending: true,
       send_email_alerts: true,
       deadline_notify: true,
     },
   });
 
-  const user2 = await prisma.user.create({
+  // Create a Company
+  const company = await prisma.company.create({
     data: {
-      username: 'user2',
-      email: 'user2@example.com',
-      password: 'password123',
-      refresh_token: 'refresh-token-2',
-      business_name: 'User2 Business',
-      notification_sending: false,
-      send_email_alerts: false,
-      deadline_notify: false,
-    },
-  });
-
-  // Create a company
-  const company1 = await prisma.company.create({
-    data: {
-      company_profile: 'Company Profile 1',
-      company_name: 'Company One',
-      business_type: 'IT',
-      standard_work_hours: 8,
-      weekly_work_limit: 40,
-      overtime_rate: 15.0,
+      company_profile: 'Construction Company',
+      company_name: 'BuildIt Corp',
+      business_type: 'Construction',
+      standard_work_hours: 40,
+      weekly_work_limit: 50,
+      overtime_rate: 1.5,
       daily_total_planned_cost: 1000.0,
-      daily_total_actual_cost: 800.0,
+      daily_total_actual_cost: 950.0,
       users: {
-        connect: [{ id: user1.id }, { id: user2.id }],
+        connect: {
+          id: user.id,
+        },
       },
     },
   });
 
-  // Create TradePosition
-  const tradePosition1 = await prisma.tradePosition.create({
+  // Create a TradePosition
+  const tradePosition = await prisma.tradePosition.create({
     data: {
-      trade_name: 'Software Engineer',
-      daily_planned_cost: 250.0,
+      trade_name: 'Carpenter',
+      daily_planned_cost: 200.0,
+      location_name: 'Site A',
       work_days: 5,
-      planned_salary: 5000.0,
+      planned_salary: 1000.0,
     },
   });
 
-  // Create an employee and link them to a TradePosition using `trade_position_id`
-  const employee1 = await prisma.employee.create({
+  // Create an Employee
+  const employee = await prisma.employee.create({
     data: {
-      username: 'employee1',
-      trade_position_id: tradePosition1.id, // Directly assigning the trade_position_id
-      daily_rate: 200.0,
-      contract_finish_date: new Date('2025-12-31'),
-      days_projection: 180,
-      budget_baseline: 5000.0,
-      company_id: company1.id,
+      username: 'jane_smith',
+      trade_position_id: tradePosition.id,
+      daily_rate: 150.0,
+      contract_finish_date: new Date('2023-12-31'),
+      days_projection: 100,
+      budget_baseline: 15000.0,
+      company_id: company.id,
     },
   });
 
-  // Create attendance record
-  await prisma.attendance.create({
+  // Create an Attendance record
+  const attendance = await prisma.attendance.create({
     data: {
-      employee_id: employee1.id,
+      employee_id: employee.id,
       status: 'present',
       reason: null,
-      overtime_hours: 2.0,
+      overtime_hours: 2.5,
     },
   });
 
-  // Create a notification for a user
-  await prisma.notification.create({
+  // Create a Log
+  const log = await prisma.log.create({
     data: {
-      message: 'Your task is due tomorrow.',
-      user_id: user1.id,
+      user_id: user.id,
+      action: 'Logged in',
+    },
+  });
+
+  // Create a Notification
+  const notification = await prisma.notification.create({
+    data: {
+      message: 'Welcome to the system!',
+      user_id: user.id,
       read: false,
     },
   });
 
-  console.log('Database has been seeded.');
+  // Create a Location
+  const location = await prisma.location.create({
+    data: {
+      location_name: 'Site B',
+    },
+  });
+
+  // Create a Project
+  const project = await prisma.project.create({
+    data: {
+      location_name: 'Site C',
+      currency: 'USD',
+      start_date: new Date('2023-01-01'),
+      end_date: new Date('2023-12-31'),
+    },
+  });
+
+  console.log('Seed data created successfully');
 }
 
-// Run the main function
 main()
   .catch((e) => {
     console.error(e);

@@ -17,6 +17,10 @@ export class TradePositionEntity implements TradePosition {
   @IsDecimal()
   daily_planned_cost: Decimal;
   @IsOptional()
+  @IsString()
+  @ApiProperty()
+  location_name: string;
+  @IsOptional()
   @ApiProperty()
   @IsNumber()
   work_days: number;
