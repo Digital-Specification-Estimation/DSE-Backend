@@ -13,6 +13,10 @@ import { TradePositionModule } from './trade-position/trade-position.module';
 import { UsersModule } from './users/users.module';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { ProjectModule } from './project/project.module';
+import { LocationModule } from './location/location.module';
+import { ProjectModule } from './project/project.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -30,6 +34,8 @@ import { ConfigModule } from '@nestjs/config';
     LogModule,
     EmployeeModule,
     TradePositionModule,
+    ProjectModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

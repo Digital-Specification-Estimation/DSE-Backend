@@ -84,10 +84,22 @@ model TradePosition {
   trade_name       String
   employees        Employee[]
   daily_planned_cost Decimal
+  location_name String
   work_days        Int
   planned_salary   Decimal
 }
 
+model  Location {
+  id String @id @default(uuid())
+  location_name String
+}
+model Project { 
+  id String @id @default(uuid())
+  location_name String
+  currency String
+  start_date DateTime @default(now())
+  end_date DateTime
+}
 model Notification {
   id        String  @id @default(uuid())
   message   String
