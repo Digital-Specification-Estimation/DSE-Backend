@@ -13,7 +13,7 @@ export class ProjectService {
     if (await this.projectExists(id)) {
       return this.prisma.project.delete({ where: { id } });
     } else {
-      throw new NotFoundException('the project arleady exists');
+      throw new NotFoundException('the project doesnot exists');
     }
   }
   async projectExists(id: string): Promise<boolean> {
@@ -30,7 +30,7 @@ export class ProjectService {
         data: { ...updateProject },
       });
     } else {
-      throw new NotFoundException('the project arleady exists');
+      throw new NotFoundException('the project doesnot exists');
     }
   }
   async getProjects() {
@@ -40,7 +40,7 @@ export class ProjectService {
     if (await this.projectExists(id)) {
       return this.prisma.project.findUnique({ where: { id } });
     } else {
-      throw new NotFoundException('the project arleady exists');
+      throw new NotFoundException('the project doesnot exists');
     }
   }
 }
