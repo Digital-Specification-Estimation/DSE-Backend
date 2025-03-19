@@ -11,6 +11,7 @@ import {
 import { AttendanceService } from '../services/attendance.service';
 import { CreateAttendanceDto } from '../dto/create-attendance.dto';
 import { UpdateAttendanceDto } from '../dto/update-attendance.dto';
+import { ReasonType } from '../interfaces/utility.interface';
 
 @Controller('attendance')
 export class AttendanceController {
@@ -26,5 +27,9 @@ export class AttendanceController {
   @Delete('delete/:id')
   async deleteAttendance(@Param('id') id: string) {
     return this.attendanceService.deleteAttendance(id);
+  }
+  @Patch('reason')
+  async addingReason(@Body() reasonType: ReasonType) {
+    return this.attendanceService.addingReason(reasonType);
   }
 }

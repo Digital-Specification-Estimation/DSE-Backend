@@ -50,9 +50,9 @@ model Company {
 model Attendance {
   id              String    @id @default(uuid())
   employee_id     String
-  status          String    // (present|absent|late)
+  status          String?   // (present|absent|late)
   reason          String?   // (sick|vacation|unpaid leave)
-  overtime_hours  Decimal
+  overtime_hours  Decimal?
   employee        Employee  @relation(fields: [employee_id], references: [id])
   date            DateTime @default(now())   
 }

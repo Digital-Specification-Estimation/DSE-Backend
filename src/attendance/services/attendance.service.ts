@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAttendanceDto } from '../dto/create-attendance.dto';
 import { UpdateAttendanceDto } from '../dto/update-attendance.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ReasonType } from '../interfaces/utility.interface';
 
 @Injectable()
 export class AttendanceService {
@@ -36,5 +37,14 @@ export class AttendanceService {
       where: { id },
     });
     return !!attendance;
+  }
+  async addingReason(reasonType: ReasonType) {
+    if (await !this.attendanceExists(reasonType.id)) {
+      throw new NotFoundException('the attendance does exists');
+    }
+    return this.prisma.attendance.update({
+      where: { id: reasonType.id, employee_id: reasonType.employee_id },
+      data: { reason: reasonType.reason },
+    });
   }
 }
