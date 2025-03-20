@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Attendance } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsDecimal, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsDecimal, IsOptional, IsString } from 'class-validator';
 
 export class AttendanceEntity implements Attendance {
   @IsString()
@@ -24,4 +24,8 @@ export class AttendanceEntity implements Attendance {
   @IsOptional()
   @ApiProperty()
   overtime_hours: Decimal;
+  @IsDate()
+  @IsOptional()
+  @ApiProperty()
+  date: Date;
 }

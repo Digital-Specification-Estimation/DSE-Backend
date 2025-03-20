@@ -54,6 +54,7 @@ model Attendance {
   reason          String?   // (sick|vacation|unpaid leave)
   overtime_hours  Decimal
   employee        Employee  @relation(fields: [employee_id], references: [id])
+  date            DateTime @default(now())   
 }
 
 model Log {
