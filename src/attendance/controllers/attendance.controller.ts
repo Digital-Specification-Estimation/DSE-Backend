@@ -9,7 +9,9 @@ import {
   Put,
   Response,
   BadRequestException,
+  ParseIntPipe,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { AttendanceService } from '../services/attendance.service';
 import { CreateAttendanceDto } from '../dto/create-attendance.dto';
 import { UpdateAttendanceDto } from '../dto/update-attendance.dto';
@@ -24,16 +26,18 @@ export class AttendanceController {
   ) {}
   @Post('add')
   async addingAttendance(
-    @Body() userId: string,
-    @Body() createAttendance: CreateAttendanceDto,
+    @Body() data: { createAttendance: CreateAttendanceDto; userId: string },
     @Response() response,
   ) {
     try {
-      this.attendanceService.addingAttendance(createAttendance);
+      const { userId, createAttendance } = data;
+      const attendance =
+        await this.attendanceService.addingAttendance(createAttendance);
       this.notificationGateway.sendPersonalNotification(
         userId,
         `the attendance is made for employee with this id ${createAttendance.employee_id}`,
       );
+      return response.status(201).json({ ...attendance });
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -49,5 +53,9 @@ export class AttendanceController {
   @Patch('reason')
   async addingReason(@Body() reasonType: ReasonType) {
     return this.attendanceService.addingReason(reasonType);
+  }
+  @Get('time/:daysAgo')
+  async getAttendance(@Param('daysAgo', ParseIntPipe) daysAgo: number) {
+    return this.attendanceService.getAttendancesBasedOnTime(daysAgo);
   }
 }

@@ -38,6 +38,17 @@ export class AttendanceService {
     });
     return !!attendance;
   }
+  async getAttendancesBasedOnTime(daysAgo: number) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysAgo);
+    const attendancesFiltered = await this.prisma.attendance.findMany({
+      where: { date: { gte: startDate } },
+    });
+    if (!attendancesFiltered || attendancesFiltered.length == 0) {
+      throw new NotFoundException();
+    }
+    return attendancesFiltered;
+  }
   async addingReason(reasonType: ReasonType) {
     if (await !this.attendanceExists(reasonType.id)) {
       throw new NotFoundException('the attendance does exists');
