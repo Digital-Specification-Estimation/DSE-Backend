@@ -54,8 +54,11 @@ export class AttendanceController {
   async addingReason(@Body() reasonType: ReasonType) {
     return this.attendanceService.addingReason(reasonType);
   }
-  @Get('time/:daysAgo')
-  async getAttendance(@Param('daysAgo', ParseIntPipe) daysAgo: number) {
-    return this.attendanceService.getAttendancesBasedOnTime(daysAgo);
+  @Get('time/:daysAgo/:status')
+  async getAttendance(
+    @Param('daysAgo', ParseIntPipe) daysAgo: number,
+    @Param('status') status: string,
+  ) {
+    return this.attendanceService.getAttendancesBasedOnTime(daysAgo, status);
   }
 }
