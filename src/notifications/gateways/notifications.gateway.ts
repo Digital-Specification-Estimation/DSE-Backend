@@ -5,6 +5,8 @@ import {
   OnGatewayConnection,
   OnGatewayInit,
   OnGatewayDisconnect,
+  ConnectedSocket,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { NotificationsService } from '../services/notifications.service';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
@@ -19,6 +21,8 @@ export class NotificationsGateway
     private readonly notificationsService: NotificationsService,
     private prisma: PrismaService,
   ) {}
+  @WebSocketServer()
+  server: Server;
   private clients = new Map<string, Socket>();
   afterInit(server: Server) {
     console.log('websocket server initialized');
@@ -39,5 +43,22 @@ export class NotificationsGateway
     for (const client of this.clients.values()) {
       client.emit('notification', message);
     }
+  }
+  @SubscribeMessage('mark-notifications-read')
+  async notificationRead(@ConnectedSocket() client: Socket) {
+    const updated = await this.prisma.notification.updateMany({
+      data: { read: true },
+    });
+    if (updated) {
+      console.log('Notification updated successfully');
+      client.emit('notification-read', {
+        message: 'Notification updated successfully',
+      });
+    }
+  }
+  @SubscribeMessage('broadcast-message')
+  async BroadCastMessage(@MessageBody() message: string) {
+    this.server.emit('notification', message);
+    console.log('broadcast', message);
   }
 }
