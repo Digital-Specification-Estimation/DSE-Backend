@@ -23,12 +23,14 @@ export class NotificationsGateway
   ) {}
   @WebSocketServer()
   server: Server;
+  private client: Socket;
   private clients = new Map<string, Socket>();
   afterInit(server: Server) {
     console.log('websocket server initialized');
   }
   handleConnection(client: Socket) {
     console.log(`Client connected : ${client.id}`);
+    this.client = client;
     this.clients.set(client.id, client);
     client.emit('connection_status', 'Connected to websocket server');
   }
@@ -36,13 +38,19 @@ export class NotificationsGateway
     console.log(`Client disconnected: ${client.id}`);
     this.clients.delete(client.id);
   }
-  async sendNotification(user_id: string, message: string) {
+  async sendBroadcastNotification(user_id: string, message: string) {
     await this.prisma.notification.create({
       data: { user_id, message, read: false },
     });
     for (const client of this.clients.values()) {
       client.emit('notification', message);
     }
+  }
+  async sendPersonalNotification(user_id: string, message: string) {
+    await this.prisma.notification.create({
+      data: { user_id, message, read: false },
+    });
+    this.client.emit('notification', message);
   }
   @SubscribeMessage('mark-notifications-read')
   async notificationRead(@ConnectedSocket() client: Socket) {
