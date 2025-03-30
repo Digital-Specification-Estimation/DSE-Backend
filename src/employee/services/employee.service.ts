@@ -119,4 +119,13 @@ export class EmployeeService {
       percentage,
     };
   }
+  async deleteManyEmployees(ids: string[]) {
+    try {
+      for (const id of ids) {
+        return await this.prisma.employee.delete({ where: { id } });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

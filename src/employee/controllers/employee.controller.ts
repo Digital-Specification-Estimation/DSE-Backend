@@ -8,6 +8,7 @@ import {
   Delete,
   Put,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
@@ -28,6 +29,12 @@ export class EmployeeController {
   @Delete('delete/:id')
   async deleteEmployee(@Param('id') id: string) {
     return await this.employeeService.deleteEmployee(id);
+  }
+  //sample of ids passed -> 1,3,4,4
+  @Delete('delete-many')
+  async deleteManyEmployees(@Query('ids') ids: string) {
+    const idArray = ids.split(',');
+    return await this.employeeService.deleteManyEmployees(idArray);
   }
   @Get('get/employees')
   async getEmployees() {
