@@ -41,38 +41,48 @@ export class AttendanceService {
   async getAttendancesBasedOnTime(daysAgo: number, status: string) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
+
     const attendancesFiltered = await this.prisma.attendance.findMany({
       where: { date: { gte: startDate }, status },
     });
-    if (!attendancesFiltered || attendancesFiltered.length == 0) {
+
+    if (!attendancesFiltered || attendancesFiltered.length === 0) {
       throw new NotFoundException();
     }
+
     const totalAttendance = await this.prisma.attendance.count({
-      where: {
-        date: { gte: startDate },
-      },
+      where: { date: { gte: startDate } },
     });
+
     const attendancePercentage =
       totalAttendance > 0
         ? (attendancesFiltered.length / totalAttendance) * 100
         : 0;
-    const previousStartDate = new Date();
-    previousStartDate.setDate(previousStartDate.getDate() - daysAgo - 1);
-    //calculate basing on the previos day from the current date
+
+    const previousStartDate = new Date(startDate);
+    previousStartDate.setDate(previousStartDate.getDate() - 1);
+
     const attendanceFilteredPreviousDay = await this.prisma.attendance.findMany(
       {
         where: { date: previousStartDate, status },
       },
     );
+
+    const totalPreviousAttendance = await this.prisma.attendance.count({
+      where: { date: previousStartDate },
+    });
+
     const previousAttendancePercentage =
-      totalAttendance > 0
-        ? (attendanceFilteredPreviousDay.length / totalAttendance) * 100
+      totalPreviousAttendance > 0
+        ? (attendanceFilteredPreviousDay.length / totalPreviousAttendance) * 100
         : 0;
+
     const percentageDifference =
       attendancePercentage - previousAttendancePercentage;
 
     return { attendancesFiltered, attendancePercentage, percentageDifference };
   }
+
   async addingReason(reasonType: ReasonType) {
     if (await !this.attendanceExists(reasonType.id)) {
       throw new NotFoundException('the attendance does exists');

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
@@ -39,5 +40,10 @@ export class EmployeeController {
   @Get('get/employees/:id')
   async getEmployee(@Param('id') id: string) {
     return await this.employeeService.getEmployee(id);
+  }
+  //not tested
+  @Get('payroll/:daysAgo')
+  async getTotalPayroll(@Param('daysAgo', ParseIntPipe) daysAgo: number) {
+    return this.employeeService.getPayrollBasedOnTime(daysAgo);
   }
 }
