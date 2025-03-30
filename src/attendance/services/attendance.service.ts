@@ -82,7 +82,73 @@ export class AttendanceService {
 
     return { attendancesFiltered, attendancePercentage, percentageDifference };
   }
+  async getAttendancesBasedOnDate(dateString: string, status: string) {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date format. Use YYYY-MM-DD or ISO 8601.');
+    }
 
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const attendancesFiltered = await this.prisma.attendance.findMany({
+      where: {
+        date: { gte: startOfDay, lt: endOfDay },
+        status,
+      },
+    });
+
+    if (!attendancesFiltered.length) {
+      throw new NotFoundException(
+        'No attendance records found for the given date and status.',
+      );
+    }
+
+    const totalAttendance = await this.prisma.attendance.count({
+      where: { date: { gte: startOfDay, lt: endOfDay } },
+    });
+
+    const attendancePercentage =
+      totalAttendance > 0
+        ? (attendancesFiltered.length / totalAttendance) * 100
+        : 0;
+
+    const previousStartDate = new Date(startOfDay);
+    previousStartDate.setDate(previousStartDate.getDate() - 1);
+
+    const previousEndDate = new Date(endOfDay);
+    previousEndDate.setDate(previousEndDate.getDate() - 1);
+
+    const attendanceFilteredPreviousDay = await this.prisma.attendance.findMany(
+      {
+        where: {
+          date: { gte: previousStartDate, lt: previousEndDate },
+          status,
+        },
+      },
+    );
+
+    const totalPreviousAttendance = await this.prisma.attendance.count({
+      where: { date: { gte: previousStartDate, lt: previousEndDate } },
+    });
+
+    const previousAttendancePercentage =
+      totalPreviousAttendance > 0
+        ? (attendanceFilteredPreviousDay.length / totalPreviousAttendance) * 100
+        : 0;
+
+    const percentageDifference =
+      attendancePercentage - previousAttendancePercentage;
+
+    return {
+      attendancesFiltered,
+      attendancePercentage,
+      percentageDifference,
+    };
+  }
   async addingReason(reasonType: ReasonType) {
     if (await !this.attendanceExists(reasonType.id)) {
       throw new NotFoundException('the attendance does exists');

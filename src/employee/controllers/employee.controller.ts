@@ -41,7 +41,6 @@ export class EmployeeController {
   async getEmployee(@Param('id') id: string) {
     return await this.employeeService.getEmployee(id);
   }
-  //not tested
   @Get('payroll/:year/:month')
   async getTotalPayroll(
     @Param('year', ParseIntPipe) year: number,

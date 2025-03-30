@@ -10,6 +10,7 @@ import {
   Response,
   BadRequestException,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AttendanceService } from '../services/attendance.service';
@@ -60,5 +61,12 @@ export class AttendanceController {
     @Param('status') status: string,
   ) {
     return this.attendanceService.getAttendancesBasedOnTime(daysAgo, status);
+  }
+  @Get('by-date')
+  async getAttendancesStatisticsByDate(
+    @Query('date') date: string,
+    @Query('status') status: string,
+  ) {
+    return this.attendanceService.getAttendancesBasedOnDate(date, status);
   }
 }
