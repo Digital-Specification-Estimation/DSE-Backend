@@ -6,6 +6,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { PasswordService } from './password.service';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+interface UserInt {
+  provider: string;
+  providerId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  picture: string;
+  accessToken: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -50,12 +60,16 @@ export class AuthService {
     }
     return await this.prisma.user.create({ data: createUserDto });
   }
-  async validateGoogleUser(profile: any) {
-    let user = await this.userService.findByGoogleId(profile.providerId);
 
+  async validateGoogleUser(profile: UserInt) {
+    let user = await this.userService.findByGoogleId(profile.providerId);
+    console.log(user);
     if (!user) {
-      const newUser: CreateUserDto = {
-        ...profile,
+      const newUser: UpdateUserDto = {
+        username: `${profile.firstName} ${profile.lastName}`,
+        email: profile.email,
+        image_url: profile.picture,
+        google_id: profile.providerId,
       };
       user = await this.userService.createUser(newUser);
       return user;

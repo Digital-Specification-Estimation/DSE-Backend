@@ -50,7 +50,7 @@ export class AuthController {
     return { message: 'Redirecting to Google OAuth...' };
   }
 
-  @Get('google/callback')
+  @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
     return this.authService.validateGoogleUser(req.user);
