@@ -158,4 +158,13 @@ export class AttendanceService {
       data: { reason: reasonType.reason },
     });
   }
+  async deleteManyAttendences(ids: string[]) {
+    try {
+      for (const id of ids) {
+        return await this.prisma.attendance.delete({ where: { id } });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

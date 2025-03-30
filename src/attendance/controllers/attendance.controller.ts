@@ -69,4 +69,11 @@ export class AttendanceController {
   ) {
     return this.attendanceService.getAttendancesBasedOnDate(date, status);
   }
+  // not tested
+  //sample of id -> 1,2,3,4,5
+  @Delete('delete-many')
+  async deleteManyAttendences(@Query('ids') ids: string) {
+    const idArray = ids.split(',');
+    return await this.attendanceService.deleteManyAttendences(idArray);
+  }
 }

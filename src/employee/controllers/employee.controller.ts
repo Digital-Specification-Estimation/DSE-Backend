@@ -30,6 +30,7 @@ export class EmployeeController {
   async deleteEmployee(@Param('id') id: string) {
     return await this.employeeService.deleteEmployee(id);
   }
+  // not tested
   //sample of ids passed -> 1,3,4,4
   @Delete('delete-many')
   async deleteManyEmployees(@Query('ids') ids: string) {
@@ -55,4 +56,6 @@ export class EmployeeController {
   ) {
     return this.employeeService.getPayrollForMonth(year, month);
   }
+  @Get('days-worked/:id')
+  async getDaysWorked(@Param('id') id: string) {}
 }

@@ -128,4 +128,15 @@ export class EmployeeService {
       console.log(error);
     }
   }
+  async getDaysWorked(id: string) {
+    try {
+      const employee = await this.prisma.employee.findUnique({ where: { id } });
+      if (!employee) {
+        throw new NotFoundException('employee not found');
+      }
+      return await this.getDaysBetween(employee.created_date);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
