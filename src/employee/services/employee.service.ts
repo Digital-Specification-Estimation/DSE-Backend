@@ -46,11 +46,51 @@ export class EmployeeService {
   async getEmployee(id: string) {
     return await this.prisma.employee.findUnique({ where: { id } });
   }
-  getDaysBetween(pastDate: Date) {
+  async getDaysBetween(pastDate: Date) {
     const now = new Date();
     const timeDifference = now.getTime() - pastDate.getTime();
     return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   }
+  async getPayrollForMonth(year: number, month: number) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+    const filteredEmployees = await this.prisma.employee.findMany({
+      where: {
+        created_date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: { trade_position: true },
+    });
+    let totalPlannedPayrollOfEmployees = 0;
+    let totalPayrollOfEmployees = 0;
+    const daysInMonth =
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    for (const employee of filteredEmployees) {
+      const totalEmployeePayrollToNow =
+        Number(employee.daily_rate) * daysInMonth;
+      const totalPlannedEmployeePayrollToNow =
+        Number(employee.trade_position.daily_planned_cost) * daysInMonth;
+      console.log(daysInMonth);
+      totalPlannedPayrollOfEmployees += totalPlannedEmployeePayrollToNow;
+      totalPayrollOfEmployees += totalEmployeePayrollToNow;
+    }
+
+    const percentage =
+      totalPlannedPayrollOfEmployees > 0
+        ? (totalPayrollOfEmployees / totalPlannedPayrollOfEmployees) * 100
+        : 0;
+
+    return {
+      totalPayrollOfEmployees,
+      totalPlannedPayrollOfEmployees,
+      percentage,
+    };
+  }
+
   async getPayrollBasedOnTime(daysAgo: number) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
@@ -61,7 +101,7 @@ export class EmployeeService {
     let totalPLannedPayrollOfEMployees = 0;
     let totalPayrollOfEmployees = 0;
     for (const employee of filteredEmployees) {
-      const daysFromCreation = this.getDaysBetween(employee.created_date);
+      const daysFromCreation = await this.getDaysBetween(employee.created_date);
       const totalEmployeePayrollToNow =
         Number(employee.daily_rate) * daysFromCreation;
       const totalPLannedEmployeePayrollToNow =

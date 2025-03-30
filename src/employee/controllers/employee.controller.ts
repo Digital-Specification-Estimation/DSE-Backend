@@ -42,8 +42,11 @@ export class EmployeeController {
     return await this.employeeService.getEmployee(id);
   }
   //not tested
-  @Get('payroll/:daysAgo')
-  async getTotalPayroll(@Param('daysAgo', ParseIntPipe) daysAgo: number) {
-    return this.employeeService.getPayrollBasedOnTime(daysAgo);
+  @Get('payroll/:year/:month')
+  async getTotalPayroll(
+    @Param('year', ParseIntPipe) year: number,
+    @Param('month', ParseIntPipe) month: number,
+  ) {
+    return this.employeeService.getPayrollForMonth(year, month);
   }
 }
