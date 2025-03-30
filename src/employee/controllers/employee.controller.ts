@@ -57,5 +57,19 @@ export class EmployeeController {
     return this.employeeService.getPayrollForMonth(year, month);
   }
   @Get('days-worked/:id')
-  async getDaysWorked(@Param('id') id: string) {}
+  async getDaysWorked(@Param('id') id: string) {
+    try {
+      return await this.employeeService.getDaysWorked(id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  @Get('plannedVsActual-user/:id')
+  async getPlannedVsActual(@Param('id') id: string) {
+    try {
+      return await this.employeeService.getPlannedVsActual(id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

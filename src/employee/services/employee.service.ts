@@ -139,4 +139,29 @@ export class EmployeeService {
       console.log(error);
     }
   }
+  async getPlannedVsActual(id: string) {
+    try {
+      const employee = await this.prisma.employee.findFirst({
+        where: { id },
+        include: { trade_position: true },
+      });
+      if (!employee) {
+        throw new NotFoundException('employee not found');
+      }
+      const daysToCreation = await this.getDaysBetween(employee.created_date);
+      const totalActual = daysToCreation * Number(employee.daily_rate);
+      const totalPlanned =
+        daysToCreation * Number(employee.trade_position.daily_planned_cost);
+      const difference = totalPlanned - totalActual;
+      if (difference == 0) {
+        return 0;
+      } else if (difference > 0) {
+        return `${difference} below budget`;
+      } else {
+        return `${difference} over budget`;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
