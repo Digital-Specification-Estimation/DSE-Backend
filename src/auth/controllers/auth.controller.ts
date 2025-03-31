@@ -27,6 +27,7 @@ import {
   logoutResponseDto,
 } from '../dto/auth.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { AuthenticatedGuard } from '../guards/authenticated.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -35,9 +36,8 @@ export class AuthController {
   @ApiBody({ type: LoginBodyDto })
   @Post('login')
   async login(@Request() req) {
-    // const data = await this.authService.login(req.user);
-    // return data;
-    return req.user;
+    const data = await this.authService.login(req.user);
+    return data;
   }
   @Post('signup')
   @ApiCreatedResponse({ type: UserEntity })
@@ -55,5 +55,19 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
     return this.authService.validateGoogleUser(req.user);
+  }
+  @UseGuards(AuthenticatedGuard)
+  @Get('session')
+  getSession(@Request() req) {
+    if (req.user) {
+      return { user: req.user };
+    } else {
+      return { message: 'No user in session' };
+    }
+  }
+  @Get('/logout')
+  logout(@Request() req): any {
+    req.session.destroy();
+    return { msg: 'The user session has ended' };
   }
 }
