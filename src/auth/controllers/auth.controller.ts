@@ -35,8 +35,9 @@ export class AuthController {
   @ApiBody({ type: LoginBodyDto })
   @Post('login')
   async login(@Request() req) {
-    const data = await this.authService.login(req.user);
-    return data;
+    // const data = await this.authService.login(req.user);
+    // return data;
+    return req.user;
   }
   @Post('signup')
   @ApiCreatedResponse({ type: UserEntity })

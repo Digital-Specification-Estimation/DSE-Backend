@@ -14,6 +14,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PasswordService } from './services/password.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SessionSerializer } from './utils/Session.serializer';
 dotenv.config();
 @Module({
   providers: [
@@ -26,11 +27,12 @@ dotenv.config();
     PasswordService,
     PrismaService,
     JwtStrategy,
+    SessionSerializer,
   ],
   imports: [
     UsersModule,
     PrismaModule,
-    PassportModule,
+    PassportModule.register({ session: true }),
     JwtModule.register({
       secret: process.env.JWT_SECRET as string,
       // signOptions: { expiresIn: '1d' },

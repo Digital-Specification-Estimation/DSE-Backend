@@ -15,6 +15,8 @@ import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { ProjectModule } from './project/project.module';
 import { LocationModule } from './location/location.module';
+import { PassportModule } from '@nestjs/passport';
+import { SessionSerializer } from './auth/utils/Session.serializer';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -25,6 +27,7 @@ import { LocationModule } from './location/location.module';
     NotificationsModule,
     AuthModule,
     UsersModule,
+    PassportModule.register({ session: true }),
     CompanyModule,
     AttendanceModule,
     ConfigModule.forRoot({ isGlobal: true }),
@@ -35,6 +38,6 @@ import { LocationModule } from './location/location.module';
     LocationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SessionSerializer],
 })
 export class AppModule {}

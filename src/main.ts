@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
+import * as session from 'express-session';
+import * as passport from 'passport';
 dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +24,18 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  app.use(
+    session({
+      // secret: process.env.SESSION_SECRET_KEY,
+      secret: 'secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false },
+    }),
+  );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
