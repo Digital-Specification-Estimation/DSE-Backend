@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient, User } from '@prisma/client';
@@ -7,6 +12,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { PasswordService } from './password.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 interface UserInt {
   provider: string;
   providerId: string;
@@ -47,21 +53,36 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     return {
       user,
-      access_token: this.jwtService.sign(payload),
+      // access_token: this.jwtService.sign(payload),
     };
   }
-  async signup(createUserDto: CreateUserDto) {
-    const { password } = createUserDto;
-    console.log('->', password);
-    let hashedPassword;
-    if (password) {
-      hashedPassword = await this.passwordService.hashPassword(password);
-      console.log(hashedPassword);
-      createUserDto.password = hashedPassword;
-    }
-    return await this.prisma.user.create({ data: createUserDto });
-  }
 
+  async signup(createUserDto: CreateUserDto) {
+    try {
+      // Hash password if it exists
+      if (createUserDto.password) {
+        createUserDto.password = await this.passwordService.hashPassword(
+          createUserDto.password,
+        );
+      }
+
+      // Attempt to create the user
+      return await this.prisma.user.create({ data: createUserDto });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException(
+            'Email is already registered. Please use a different email.',
+          );
+        }
+      }
+
+      console.error('Signup Error:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while creating the user.',
+      );
+    }
+  }
   async validateGoogleUser(profile: UserInt) {
     let user = await this.userService.findByGoogleId(profile.providerId);
     console.log(user);

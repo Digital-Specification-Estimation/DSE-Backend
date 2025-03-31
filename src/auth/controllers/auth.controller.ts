@@ -28,6 +28,7 @@ import {
 } from '../dto/auth.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { AuthenticatedGuard } from '../guards/authenticated.guard';
+import { GoogleAuthGuard } from '../guards/google-auth.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -46,14 +47,15 @@ export class AuthController {
     return new UserEntity(await this.authService.signup(createUserDto));
   }
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     return { message: 'Redirecting to Google OAuth...' };
   }
 
   @Get('google/redirect')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req) {
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    console.log('on redirection');
     return this.authService.validateGoogleUser(req.user);
   }
   @UseGuards(AuthenticatedGuard)
