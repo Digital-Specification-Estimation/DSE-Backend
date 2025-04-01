@@ -29,6 +29,7 @@ import {
 import { UserEntity } from 'src/users/entities/user.entity';
 import { AuthenticatedGuard } from '../guards/authenticated.guard';
 import { GoogleAuthGuard } from '../guards/google-auth.guard';
+import { Response, Request as Re } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -46,6 +47,17 @@ export class AuthController {
   async signup(@Body() createUserDto: CreateUserDto) {
     return new UserEntity(await this.authService.signup(createUserDto));
   }
+  @Get('google/start')
+  logoutBeforeGoogleAuth(@Req() req: Re, @Res() res: Response) {
+    if (req.session) {
+      req.session.destroy(() => {
+        res.redirect('/auth/google');
+      });
+    } else {
+      console.warn('Session is undefined');
+      res.redirect('/auth/google');
+    }
+  }
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
@@ -54,9 +66,11 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req) {
-    console.log('on redirection');
-    return this.authService.validateGoogleUser(req.user);
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const user = await this.authService.validateGoogleUser(req.user);
+    if (user) {
+      res.redirect('https://digitalestimation.vercel.app/dashboard');
+    }
   }
   @UseGuards(AuthenticatedGuard)
   @Get('session')
