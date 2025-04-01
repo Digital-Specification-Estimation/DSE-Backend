@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Employee } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsDecimal,
@@ -36,6 +37,7 @@ export class EmployeeEntity implements Employee {
 
   @ApiProperty()
   @IsOptional()
+  @Type(() => Date)
   @IsDate()
   contract_finish_date: Date;
 

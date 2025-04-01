@@ -34,10 +34,10 @@ export class AttendanceController {
       const { userId, createAttendance } = data;
       const attendance =
         await this.attendanceService.addingAttendance(createAttendance);
-      this.notificationGateway.sendPersonalNotification(
-        userId,
-        `the attendance is made for employee with this id ${createAttendance.employee_id}`,
-      );
+      // this.notificationGateway.sendPersonalNotification(
+      //   userId,
+      //   `the attendance is made for employee with this id ${createAttendance.employee_id}`,
+      // );
       return response.status(201).json({ ...attendance });
     } catch (error) {
       throw new BadRequestException(error);

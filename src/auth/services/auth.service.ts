@@ -79,13 +79,12 @@ export class AuthService {
 
       console.error('Signup Error:', error);
       throw new InternalServerErrorException(
-        'An error occurred while creating the user.',
+        'An error occurred while return user;creating the user.',
       );
     }
   }
-  async validateGoogleUser(profile: UserInt) {
+  async validateGoogleUser(profile: any) {
     let user = await this.userService.findByGoogleId(profile.providerId);
-    console.log(user);
     if (!user) {
       const newUser: UpdateUserDto = {
         username: `${profile.firstName} ${profile.lastName}`,
@@ -94,6 +93,7 @@ export class AuthService {
         google_id: profile.providerId,
       };
       user = await this.userService.createUser(newUser);
+      console.log(user);
       return user;
       // }
     }

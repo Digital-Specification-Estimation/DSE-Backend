@@ -27,18 +27,18 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.use(
-    session({
-      // secret: process.env.SESSION_SECRET_KEY,
-      secret: 'secret',
-      resave: false,
-      saveUninitialized: false,
-      cookie: { secure: false, maxAge: 3600000 },
-    }),
-  );
+  // app.use(
+  //   session({
+  //     // secret: process.env.SESSION_SECRET_KEY,
+  //     secret: 'secret',
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 },
+  //   }),
+  // );
 
-  app.use(passport.initialize());
-  app.use(passport.session());
+  // app.use(passport.initialize());
+  // app.use(passport.session());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
