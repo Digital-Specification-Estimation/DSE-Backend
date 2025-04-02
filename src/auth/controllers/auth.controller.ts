@@ -7,6 +7,7 @@ import {
   Req,
   Request,
   Res,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -29,7 +30,7 @@ import {
 import { UserEntity } from 'src/users/entities/user.entity';
 import { AuthenticatedGuard } from '../guards/authenticated.guard';
 import { GoogleAuthGuard } from '../guards/google-auth.guard';
-import { Response, Request as Re } from 'express';
+import { Response as Resp, Request as Re } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -48,7 +49,7 @@ export class AuthController {
     return new UserEntity(await this.authService.signup(createUserDto));
   }
   @Get('google/start')
-  logoutBeforeGoogleAuth(@Req() req: Re, @Res() res: Response) {
+  logoutBeforeGoogleAuth(@Req() req: Re, @Res() res: Resp) {
     if (req.session) {
       req.session.destroy(() => {
         res.redirect('/auth/google');
@@ -83,7 +84,10 @@ export class AuthController {
   }
   @Get('/logout')
   logout(@Request() req): any {
+    console.log('called');
+    console.log('sess', req.session);
     req.session.destroy();
+    console.log('done');
     return { msg: 'The user session has ended' };
   }
 }
