@@ -11,7 +11,13 @@ import * as cors from 'cors';
 dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cors());
+  app.enableCors({
+    origin: ['http://localhost:3000', 'https://digitalestimation.vercel.app/'],
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
+  });
+
   app.useGlobalPipes(new ValidationPipe());
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
