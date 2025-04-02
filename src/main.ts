@@ -7,6 +7,8 @@ import { join } from 'path';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import { PrismaSessionStore } from './prisma/utils/prismaSession.store';
 
 dotenv.config();
 async function bootstrap() {
@@ -33,8 +35,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  const prisma = new PrismaClient();
   app.use(
     session({
+      store: new PrismaSessionStore(),
       // secret: process.env.SESSION_SECRET_KEY,
       secret: 'secret',
       resave: false,

@@ -56,6 +56,14 @@ model Attendance {
   employee        Employee  @relation(fields: [employee_id], references: [id])
   date            DateTime @default(now())   
 }
+model Session {
+  id        String   @id @default(uuid())
+  sid       String   @unique
+  data      String   
+  expiresAt DateTime 
+
+  @@index([sid])
+}
 
 model Log {
   id        String  @id @default(uuid())
