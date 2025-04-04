@@ -40,7 +40,7 @@ async function bootstrap() {
     session({
       // store: new PrismaSessionStore(),
       // secret: process.env.SESSION_SECRET_KEY,
-      store: new session.MemoryStore(),
+      store: undefined,
       secret: 'secret',
       resave: false,
       saveUninitialized: false,
