@@ -14,4 +14,8 @@ import { UpdateCompanyDto } from '../dto/update-company.dto';
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
+  @Get('/companies')
+  async getCompanies() {
+    return await this.companyService.getCompanies();
+  }
 }

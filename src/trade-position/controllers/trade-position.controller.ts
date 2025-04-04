@@ -23,8 +23,9 @@ export class TradePositionController {
   async getTrade(@Param('id') id: string) {
     return await this.tradePositionService.getTrade(id);
   }
-  @Get('get/trades')
+  @Get('trades')
   async getTrades() {
+    console.log(await this.tradePositionService.getTrades());
     return await this.tradePositionService.getTrades();
   }
   @Delete('delete/:id')

@@ -48,17 +48,7 @@ export class AuthController {
   async signup(@Body() createUserDto: CreateUserDto) {
     return new UserEntity(await this.authService.signup(createUserDto));
   }
-  @Get('google/start')
-  logoutBeforeGoogleAuth(@Req() req: Re, @Res() res: Resp) {
-    if (req.session) {
-      req.session.destroy(() => {
-        res.redirect('/auth/google');
-      });
-    } else {
-      console.warn('Session is undefined');
-      res.redirect('/auth/google');
-    }
-  }
+
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
@@ -70,7 +60,10 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const user = await this.authService.validateGoogleUser(req.user);
     if (user) {
-      res.redirect('https://digitalestimation.vercel.app/dashboard');
+      console.log(user);
+      // res.redirect('https://digitalestimation.vercel.app/dashboard');
+      return user;
+      // res.redirect('http://localhost:3000/dashboard');
     }
   }
   @UseGuards(AuthenticatedGuard)

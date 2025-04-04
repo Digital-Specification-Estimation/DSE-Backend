@@ -93,7 +93,6 @@ export class AuthService {
         google_id: profile.providerId,
       };
       user = await this.userService.createUser(newUser);
-      console.log(user);
       return user;
       // }
     }

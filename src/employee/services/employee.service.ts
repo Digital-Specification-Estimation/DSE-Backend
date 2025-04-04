@@ -38,7 +38,9 @@ export class EmployeeService {
     return !!employee;
   }
   async getEmployees() {
-    return this.prisma.employee.findMany();
+    return this.prisma.employee.findMany({
+      include: { trade_position: true, company: true },
+    });
   }
   async getEmployeeNumber() {
     return this.prisma.employee.count();
