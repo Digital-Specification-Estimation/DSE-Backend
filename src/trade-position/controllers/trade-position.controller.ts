@@ -26,7 +26,11 @@ export class TradePositionController {
   @Get('trades')
   async getTrades() {
     console.log(await this.tradePositionService.getTrades());
-    return await this.tradePositionService.getTrades();
+    const trades = await this.tradePositionService.getTrades();
+    return trades.map((trade) => ({
+      ...trade,
+      daily_planned_cost: trade.daily_planned_cost?.toString(),
+    }));
   }
   @Delete('delete/:id')
   async deleteTrade(@Param('id') id: string) {

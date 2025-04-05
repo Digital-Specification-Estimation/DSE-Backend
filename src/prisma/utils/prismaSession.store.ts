@@ -7,6 +7,10 @@ export class PrismaSessionStore extends Store {
   async get(sid: string, callback: (err: any, session?: any) => void) {
     try {
       const session = await prisma.session.findUnique({ where: { sid } });
+      if (!session) {
+        throw new Error('Session not found');
+      }
+      console.log('session calling');
       if (session && session.expiresAt > new Date()) {
         callback(null, JSON.parse(session.data));
       } else {
@@ -19,6 +23,7 @@ export class PrismaSessionStore extends Store {
 
   async set(sid: string, session: any, callback?: (err?: any) => void) {
     try {
+      console.log('session', session);
       await prisma.session.upsert({
         where: { sid },
         update: {

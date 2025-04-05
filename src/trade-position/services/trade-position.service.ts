@@ -7,7 +7,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TradePositionService {
   constructor(private prisma: PrismaService) {}
   async addTrade(createTrade: CreateTradePositionDto) {
-    return await this.prisma.tradePosition.create({ data: { ...createTrade } });
+    try {
+      return await this.prisma.tradePosition.create({
+        data: { ...createTrade },
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
   async editTrade(updateTrade: UpdateTradePositionDto) {
     if (!updateTrade.id) {

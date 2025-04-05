@@ -38,9 +38,8 @@ async function bootstrap() {
   const prisma = new PrismaClient();
   app.use(
     session({
-      // store: new PrismaSessionStore(),
+      store: new PrismaSessionStore(),
       // secret: process.env.SESSION_SECRET_KEY,
-      store: new session.MemoryStore(),
       secret: 'secret',
       resave: false,
       saveUninitialized: false,

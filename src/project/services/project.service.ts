@@ -2,12 +2,20 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProjectDto } from '../dto/update-project.dto';
+import { format } from 'date-fns';
 
 @Injectable()
 export class ProjectService {
   constructor(private prisma: PrismaService) {}
   async addProject(createProject: CreateProjectDto) {
-    return this.prisma.project.create({ data: createProject });
+    console.log(createProject);
+    return this.prisma.project.create({
+      data: {
+        ...createProject,
+        start_date: new Date(createProject.start_date),
+        end_date: new Date(createProject.end_date),
+      },
+    });
   }
   async deleteProject(id: string) {
     if (await this.projectExists(id)) {
@@ -34,7 +42,13 @@ export class ProjectService {
     }
   }
   async getProjects() {
-    return this.prisma.project.findMany();
+    console.log(this.prisma.project.findMany());
+    const projects = this.prisma.project.findMany();
+    return (await projects).map((project) => ({
+      ...project,
+      start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
+      end_date: format(new Date(project.end_date), 'dd/MM/yyyy'),
+    }));
   }
   async getProjectById(id: string) {
     if (await this.projectExists(id)) {

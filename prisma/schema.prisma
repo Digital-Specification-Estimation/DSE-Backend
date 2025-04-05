@@ -75,14 +75,14 @@ model Log {
 
 model Employee {
   id                    String    @id @default(uuid())
-  username              String
+  username              String?
   trade_position_id     String
-  daily_rate            Decimal
+  daily_rate            Decimal?   @default(0)
   created_date         DateTime  @default(now())
   attendance           Attendance[]
-  contract_finish_date DateTime
-  days_projection      Int
-  budget_baseline      Decimal
+  contract_finish_date DateTime?
+  days_projection      Int?
+  budget_baseline      Decimal?   @default(0)
   company_id           String
   company              Company   @relation(fields: [company_id], references: [id])
   trade_position       TradePosition @relation(fields: [trade_position_id], references: [id])
@@ -90,12 +90,12 @@ model Employee {
 
 model TradePosition {
   id                String    @id @default(uuid())
-  trade_name       String
+  trade_name       String?
   employees        Employee[]
-  daily_planned_cost Decimal
-  location_name String
-  work_days        Int
-  planned_salary   Decimal
+  daily_planned_cost Decimal?   @db.Decimal(10, 2)
+  location_name String?
+  work_days        Int?
+  planned_salary   Decimal?
 }
 
 model  Location {
@@ -104,9 +104,10 @@ model  Location {
 }
 model Project { 
   id String @id @default(uuid())
+  project_name String @default("Project")
   location_name String
   currency String
-  start_date DateTime @default(now())
+  start_date DateTime 
   end_date DateTime
 }
 model Notification {

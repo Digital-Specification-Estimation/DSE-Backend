@@ -38,9 +38,14 @@ export class EmployeeService {
     return !!employee;
   }
   async getEmployees() {
-    return this.prisma.employee.findMany({
+    const employees = this.prisma.employee.findMany({
       include: { trade_position: true, company: true },
     });
+    return (await employees).map((employee) => ({
+      ...employee,
+      budget_baseline: employee.budget_baseline?.toString(),
+      daily_rate: employee.daily_rate?.toString(),
+    }));
   }
   async getEmployeeNumber() {
     return this.prisma.employee.count();
