@@ -41,6 +41,7 @@ export class EmployeeController {
   async getEmployees() {
     return await this.employeeService.getEmployees();
   }
+
   @Get('get/number')
   async getEmployeeNumber() {
     return await this.employeeService.getEmployeeNumber();

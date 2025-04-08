@@ -17,6 +17,7 @@ import { ProjectModule } from './project/project.module';
 import { LocationModule } from './location/location.module';
 import { PassportModule } from '@nestjs/passport';
 import { SessionSerializer } from './auth/utils/Session.serializer';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -27,6 +28,7 @@ import { SessionSerializer } from './auth/utils/Session.serializer';
     NotificationsModule,
     AuthModule,
     UsersModule,
+    ScheduleModule.forRoot(),
     PassportModule.register({ session: true }),
     CompanyModule,
     AttendanceModule,

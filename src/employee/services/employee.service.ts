@@ -39,7 +39,7 @@ export class EmployeeService {
   }
   async getEmployees() {
     const employees = this.prisma.employee.findMany({
-      include: { trade_position: true, company: true },
+      include: { trade_position: true, company: true, attendance: true },
     });
     return (await employees).map((employee) => ({
       ...employee,

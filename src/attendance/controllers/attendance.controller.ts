@@ -55,6 +55,17 @@ export class AttendanceController {
   async addingReason(@Body() reasonType: ReasonType) {
     return this.attendanceService.addingReason(reasonType);
   }
+  @Patch('update')
+  async updateAttendance(
+    @Body() body: { employeeId: string; date: string; status: string },
+  ) {
+    const { employeeId, date, status } = body;
+    return this.attendanceService.editingAttendanceByDate(
+      employeeId,
+      new Date(date),
+      status,
+    );
+  }
   @Get('time/:daysAgo/:status')
   async getAttendance(
     @Param('daysAgo', ParseIntPipe) daysAgo: number,

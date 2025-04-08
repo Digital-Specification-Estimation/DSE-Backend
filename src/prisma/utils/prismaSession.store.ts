@@ -44,7 +44,9 @@ export class PrismaSessionStore extends Store {
 
   async destroy(sid: string, callback?: (err?: any) => void) {
     try {
-      await prisma.session.delete({ where: { sid } });
+      console.log('destroy function called');
+      // Safe way: deleteMany does not throw if record doesn't exist
+      await prisma.session.deleteMany({ where: { sid } });
       callback?.();
     } catch (error) {
       callback?.(error);

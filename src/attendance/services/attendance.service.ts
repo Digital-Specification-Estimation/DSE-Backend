@@ -3,6 +3,7 @@ import { CreateAttendanceDto } from '../dto/create-attendance.dto';
 import { UpdateAttendanceDto } from '../dto/update-attendance.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReasonType } from '../interfaces/utility.interface';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AttendanceService {
@@ -166,5 +167,35 @@ export class AttendanceService {
     } catch (error) {
       console.log(error);
     }
+  }
+  @Cron(CronExpression.EVERY_DAY_AT_7AM)
+  async createDefaultDailyAttendance() {
+    console.log('Running daily attendance creating job');
+    const employees = await this.prisma.employee.findMany();
+    const entries = employees.map((employee) => ({
+      employee_id: employee.id,
+      status: 'present',
+    }));
+    await this.prisma.attendance.createMany({
+      data: entries,
+      skipDuplicates: true,
+    });
+    const today = new Date();
+    console.log('default attendance created for today', today);
+  }
+  async editingAttendanceByDate(
+    employeeId: string,
+    date: Date,
+    status: string,
+  ) {
+    return this.prisma.attendance.updateMany({
+      where: {
+        employee_id: employeeId,
+        date,
+      },
+      data: {
+        status,
+      },
+    });
   }
 }
