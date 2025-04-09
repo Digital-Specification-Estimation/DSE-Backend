@@ -37,16 +37,73 @@ export class EmployeeService {
     const employee = await this.prisma.employee.findUnique({ where: { id } });
     return !!employee;
   }
+  getRemainingDays(targetDateString: Date): number {
+    const today = new Date();
+    const targetDate = new Date(targetDateString);
+
+    // Set both dates to the beginning of the day to avoid partial days
+    today.setHours(0, 0, 0, 0);
+    targetDate.setHours(0, 0, 0, 0);
+
+    const timeDiff = targetDate.getTime() - today.getTime();
+    const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+    return dayDiff;
+  }
+  async getCurrentProjectForEmployee(employeeId: string) {
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { id: employeeId },
+        include: { trade_position: true },
+      });
+      if (!employee) {
+        throw new NotFoundException('employee not found');
+      }
+      const project = await this.prisma.project.findFirst({
+        where: {
+          location_name: {
+            equals: employee.trade_position.location_name ?? undefined,
+            mode: 'insensitive',
+          },
+        },
+      });
+      console.log(employee.trade_position.location_name);
+      if (!project) {
+        return 'no project';
+      }
+      return project.project_name;
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async getEmployees() {
-    const employees = this.prisma.employee.findMany({
+    const employees = await this.prisma.employee.findMany({
       include: { trade_position: true, company: true, attendance: true },
     });
-    return (await employees).map((employee) => ({
-      ...employee,
-      budget_baseline: employee.budget_baseline?.toString(),
-      daily_rate: employee.daily_rate?.toString(),
-    }));
+
+    const employeeWithExtras = await Promise.all(
+      employees.map(async (employee) => {
+        const assignedProject = await this.getCurrentProjectForEmployee(
+          employee.id,
+        );
+
+        return {
+          ...employee,
+          budget_baseline: employee.budget_baseline?.toString(),
+          daily_rate: employee.daily_rate?.toString(),
+          remaining_days: this.getRemainingDays(
+            employee.contract_finish_date
+              ? employee.contract_finish_date
+              : new Date(),
+          ),
+          assignedProject,
+        };
+      }),
+    );
+
+    return employeeWithExtras;
   }
+
   async getEmployeeNumber() {
     return this.prisma.employee.count();
   }

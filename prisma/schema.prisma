@@ -105,7 +105,7 @@ model  Location {
 model Project { 
   id String @id @default(uuid())
   project_name String @default("Project")
-  location_name String
+  location_name String 
   currency String
   start_date DateTime 
   end_date DateTime
