@@ -37,6 +37,27 @@ export class EmployeeService {
     const employee = await this.prisma.employee.findUnique({ where: { id } });
     return !!employee;
   }
+  getAttendanceDaysBasedOnReason = async (
+    employeeId: string,
+    reason: string,
+  ) => {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+    });
+    if (!employee) {
+      throw new NotFoundException('employee not found');
+    }
+    const attendances = await this.prisma.attendance.findMany({
+      where: {
+        employee_id: employeeId,
+        reason: { equals: reason, mode: 'insensitive' },
+      },
+    });
+    if (!attendances) {
+      return 0;
+    }
+    return attendances.length;
+  };
   getRemainingDays(targetDateString: Date): number {
     const today = new Date();
     const targetDate = new Date(targetDateString);
@@ -85,6 +106,43 @@ export class EmployeeService {
         const assignedProject = await this.getCurrentProjectForEmployee(
           employee.id,
         );
+        const sickDays = await this.getAttendanceDaysBasedOnReason(
+          employee.id,
+          'sick',
+        );
+        const vacationDays = await this.getAttendanceDaysBasedOnReason(
+          employee.id,
+          'vacation',
+        );
+        const unpaidDays = await this.getAttendanceDaysBasedOnReason(
+          employee.id,
+          'unpaid',
+        );
+        const plannedVsActual =
+          Number(
+            Number(
+              employee.trade_position.daily_planned_cost
+                ? employee.trade_position.daily_planned_cost
+                : 0,
+            ) *
+              Number(
+                await this.getDaysBetween(
+                  employee.created_date
+                    ? new Date(employee.created_date)
+                    : new Date(),
+                ),
+              ),
+          ) -
+          Number(
+            Number(employee.daily_rate ? employee.daily_rate : 0) *
+              Number(
+                await this.getDaysBetween(
+                  employee.created_date
+                    ? new Date(employee.created_date)
+                    : new Date(),
+                ),
+              ),
+          );
 
         return {
           ...employee,
@@ -102,6 +160,13 @@ export class EmployeeService {
               ? employee.contract_finish_date
               : new Date(),
           ),
+          sickDays,
+          vacationDays,
+          unpaidDays,
+          plannedVsActual:
+            plannedVsActual < 0
+              ? `Over Budget ${plannedVsActual}`
+              : `Planned ${plannedVsActual}`,
           assignedProject,
           totalActualPayroll:
             Number(employee.daily_rate ? employee.daily_rate : 0) *
