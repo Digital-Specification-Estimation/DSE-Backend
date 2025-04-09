@@ -168,7 +168,7 @@ export class AttendanceService {
       console.log(error);
     }
   }
-  @Cron(CronExpression.EVERY_DAY_AT_7AM)
+  @Cron(CronExpression.EVERY_DAY_AT_4PM)
   async createDefaultDailyAttendance() {
     console.log('Running daily attendance creating job');
     const employees = await this.prisma.employee.findMany();

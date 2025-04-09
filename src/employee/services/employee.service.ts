@@ -67,7 +67,6 @@ export class EmployeeService {
           },
         },
       });
-      console.log(employee.trade_position.location_name);
       if (!project) {
         return 'no project';
       }
@@ -91,12 +90,28 @@ export class EmployeeService {
           ...employee,
           budget_baseline: employee.budget_baseline?.toString(),
           daily_rate: employee.daily_rate?.toString(),
+          days_worked: Number(
+            await this.getDaysBetween(
+              employee.created_date
+                ? new Date(employee.created_date)
+                : new Date(),
+            ),
+          ),
           remaining_days: this.getRemainingDays(
             employee.contract_finish_date
               ? employee.contract_finish_date
               : new Date(),
           ),
           assignedProject,
+          totalActualPayroll:
+            Number(employee.daily_rate ? employee.daily_rate : 0) *
+            Number(
+              await this.getDaysBetween(
+                employee.created_date
+                  ? new Date(employee.created_date)
+                  : new Date(),
+              ),
+            ),
         };
       }),
     );
