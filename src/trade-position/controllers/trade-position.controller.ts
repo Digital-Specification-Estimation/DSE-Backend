@@ -44,4 +44,10 @@ export class TradePositionController {
   async getNumber() {
     return await this.tradePositionService.getTradesNumber();
   }
+  @Get('trades-location-name/:location_name')
+  async getTradesBylocationName(@Param('location_name') locationName: string) {
+    return await this.tradePositionService.getTradesByLocationName(
+      locationName,
+    );
+  }
 }

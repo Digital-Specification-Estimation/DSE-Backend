@@ -55,4 +55,11 @@ export class TradePositionService {
       throw new NotFoundException('the trade not found');
     }
   }
+  async getTradesByLocationName(locationName: string) {
+    const trades = await this.prisma.tradePosition.findMany({
+      where: { location_name: { equals: locationName, mode: 'insensitive' } },
+      include: { employees: true },
+    });
+    return trades;
+  }
 }
