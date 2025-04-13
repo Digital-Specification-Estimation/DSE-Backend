@@ -19,6 +19,7 @@ model User {
   username             String?
   email                String?      @unique
   password             String?
+  role                 String?
   refresh_token        String?
   company_id          String?
   business_name       String?
@@ -38,6 +39,7 @@ model Company {
   business_type         String
   standard_work_hours   Int
   weekly_work_limit     Int
+  holidays String[]
   overtime_rate         Decimal
   users                 User[]        @relation("UserCompanies")
   employees             Employee[]
@@ -126,4 +128,12 @@ model UserSettings{
   notification_sending Boolean?
   send_email_alerts   Boolean?
   deadline_notify     Boolean?
+  remind_approvals    Boolean?
+  full_access         Boolean?
+  approve_attendance  Boolean?
+  manage_payroll      Boolean?
+  view_reports        Boolean?
+  approve_leaves      Boolean?
+  view_payslip        Boolean?
+  mark_attendance     Boolean?
 }
