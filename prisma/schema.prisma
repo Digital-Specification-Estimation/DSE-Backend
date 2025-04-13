@@ -26,9 +26,7 @@ model User {
   apple_id            String?
   notifications       Notification[]
   image_url           String?
-  notification_sending Boolean?
-  send_email_alerts   Boolean?
-  deadline_notify     Boolean?
+  settings            UserSettings?
   companies           Company[]    @relation("UserCompanies")
   logs                Log[]
 }
@@ -118,3 +116,14 @@ model Notification {
   user      User    @relation(fields: [user_id], references: [id])
 }
 
+model UserSettings{
+  id String @id @default(uuid())
+  userId String @unique
+  salary_calculation String?
+  currency String?
+  payslip_format String?
+  user User @relation(fields: [userId],references: [id])
+  notification_sending Boolean?
+  send_email_alerts   Boolean?
+  deadline_notify     Boolean?
+}

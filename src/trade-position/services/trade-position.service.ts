@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTradePositionDto } from '../dto/create-trade-position.dto';
 import { UpdateTradePositionDto } from '../dto/update-trade-position.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TradePosition } from '@prisma/client';
 
 @Injectable()
 export class TradePositionService {
@@ -60,6 +61,9 @@ export class TradePositionService {
       where: { location_name: { equals: locationName, mode: 'insensitive' } },
       include: { employees: true },
     });
-    return trades;
+    return trades.map((trade: TradePosition) => ({
+      ...trade,
+      daily_planned_cost: trade.daily_planned_cost?.toString(),
+    }));
   }
 }

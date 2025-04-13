@@ -73,4 +73,5 @@ export class EmployeeController {
       console.log(error);
     }
   }
+  // @Get("group-by-trades")
 }
