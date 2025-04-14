@@ -38,6 +38,7 @@ export class TradePositionController {
   }
   @Put('edit')
   async editTrade(@Body() updateTrade: UpdateTradePositionDto) {
+    console.log(updateTrade);
     return await this.tradePositionService.editTrade(updateTrade);
   }
   @Get('number')
