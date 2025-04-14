@@ -4,6 +4,7 @@ import { UpdateAttendanceDto } from '../dto/update-attendance.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReasonType } from '../interfaces/utility.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { startOfMonth, endOfMonth, getDate } from 'date-fns';
 
 @Injectable()
 export class AttendanceService {
@@ -38,6 +39,60 @@ export class AttendanceService {
       where: { id },
     });
     return !!attendance;
+  }
+  async getDailyAttendancePercentage() {
+    const now = new Date();
+    const start = startOfMonth(now);
+    const end = endOfMonth(now);
+
+    // Get all employees
+    const employees = await this.prisma.employee.findMany();
+    const totalEmployees = employees.length;
+
+    // Get all attendance records in the current month
+    const attendanceRecords = await this.prisma.attendance.findMany({
+      where: {
+        date: {
+          gte: start,
+          lte: end,
+        },
+        status: 'present',
+      },
+    });
+
+    // Initialize days in month
+    const daysInMonth = getDate(end);
+    const dailyAttendance: {
+      day: number;
+      attendance: number;
+      highlight?: boolean;
+    }[] = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayAttendance = attendanceRecords.filter(
+        (record) => new Date(record.date).getDate() === day,
+      );
+
+      const percentage = totalEmployees
+        ? Math.round((dayAttendance.length / totalEmployees) * 100)
+        : 0;
+
+      dailyAttendance.push({
+        day,
+        attendance: percentage,
+      });
+    }
+
+    // Add highlight to the highest attendance day
+    const max = Math.max(...dailyAttendance.map((item) => item.attendance));
+    const highlightIndex = dailyAttendance.findIndex(
+      (item) => item.attendance === max,
+    );
+    if (highlightIndex !== -1) {
+      dailyAttendance[highlightIndex].highlight = true;
+    }
+
+    return dailyAttendance;
   }
   async getAttendancesBasedOnTime(daysAgo: number, status: string) {
     const startDate = new Date();

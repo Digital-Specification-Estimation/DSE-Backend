@@ -87,4 +87,8 @@ export class AttendanceController {
     const idArray = ids.split(',');
     return await this.attendanceService.deleteManyAttendences(idArray);
   }
+  @Get('daily-percentage-monthly')
+  getDailyAttendance() {
+    return this.attendanceService.getDailyAttendancePercentage();
+  }
 }
