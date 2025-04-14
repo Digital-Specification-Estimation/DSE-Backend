@@ -42,10 +42,16 @@ export class ProjectService {
     }
   }
   async getProjects() {
-    console.log(this.prisma.project.findMany());
-    const projects = this.prisma.project.findMany();
+    const projects: any = this.prisma.project.findMany({
+      include: { trade_positions: { include: { employees: true } } },
+    });
     return (await projects).map((project) => ({
       ...project,
+      // trade_positions: [
+      //   ...project.trade_positions,
+      //   daily_planned_cost:
+      //     project.trade_positions.daily_planned_cost?.toString(),
+      // ],
       start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
       end_date: format(new Date(project.end_date), 'dd/MM/yyyy'),
     }));

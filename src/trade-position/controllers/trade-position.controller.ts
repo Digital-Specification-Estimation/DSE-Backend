@@ -25,7 +25,6 @@ export class TradePositionController {
   }
   @Get('trades')
   async getTrades() {
-    console.log(await this.tradePositionService.getTrades());
     const trades = await this.tradePositionService.getTrades();
     return trades.map((trade) => ({
       ...trade,
@@ -38,7 +37,6 @@ export class TradePositionController {
   }
   @Put('edit')
   async editTrade(@Body() updateTrade: UpdateTradePositionDto) {
-    console.log(updateTrade);
     return await this.tradePositionService.editTrade(updateTrade);
   }
   @Get('number')

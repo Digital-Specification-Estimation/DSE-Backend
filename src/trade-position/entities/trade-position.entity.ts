@@ -19,6 +19,10 @@ export class TradePositionEntity implements TradePosition {
   @IsOptional()
   @IsString()
   @ApiProperty()
+  projectId: string | null;
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
   location_name: string;
   @IsOptional()
   @ApiProperty()

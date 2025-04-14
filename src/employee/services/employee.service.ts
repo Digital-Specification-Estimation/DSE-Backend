@@ -145,14 +145,15 @@ export class EmployeeService {
   }
   async getEmployees() {
     const employees = await this.prisma.employee.findMany({
-      include: { trade_position: true, company: true, attendance: true },
+      include: {
+        trade_position: { include: { project: true } },
+        company: true,
+        attendance: true,
+      },
     });
 
     const employeeWithExtras = await Promise.all(
       employees.map(async (employee) => {
-        const assignedProject = await this.getCurrentProjectForEmployee(
-          employee.id,
-        );
         const sickDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
           'sick',
@@ -228,7 +229,6 @@ export class EmployeeService {
             plannedVsActual < 0
               ? `Over Budget ${plannedVsActual}`
               : `Planned ${plannedVsActual}`,
-          assignedProject,
           totalActualPayroll:
             Number(employee.daily_rate ? employee.daily_rate : 0) *
             Number(
