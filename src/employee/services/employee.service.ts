@@ -163,6 +163,20 @@ export class EmployeeService {
           sickDays,
           vacationDays,
           unpaidDays,
+          totalPlannedBytrade: Number(
+            Number(
+              employee.trade_position.daily_planned_cost
+                ? employee.trade_position.daily_planned_cost
+                : 0,
+            ) *
+              Number(
+                await this.getDaysBetween(
+                  employee.created_date
+                    ? new Date(employee.created_date)
+                    : new Date(),
+                ),
+              ),
+          ),
           plannedVsActual:
             plannedVsActual < 0
               ? `Over Budget ${plannedVsActual}`

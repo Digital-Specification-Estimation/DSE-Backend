@@ -14,6 +14,8 @@ export class UserEntity implements User {
 
   @ApiProperty({ required: false })
   username: string | null;
+  @ApiProperty({ required: false })
+  role: string | null;
 
   @ApiProperty({ required: false })
   email: string | null;
@@ -39,15 +41,6 @@ export class UserEntity implements User {
 
   @ApiProperty({ required: false })
   image_url: string | null;
-
-  @ApiProperty({ required: false })
-  notification_sending: boolean | null;
-
-  @ApiProperty({ required: false })
-  send_email_alerts: boolean | null;
-
-  @ApiProperty({ required: false })
-  deadline_notify: boolean | null;
 
   @ApiProperty({ required: false, type: () => [String] })
   logs: string[];

@@ -10,9 +10,6 @@ async function main() {
       email: 'john.doe@example.com',
       password: 'hashedpassword123',
       business_name: 'Doe Enterprises',
-      notification_sending: true,
-      send_email_alerts: true,
-      deadline_notify: true,
     },
   });
 
@@ -22,9 +19,6 @@ async function main() {
       email: 'alice.smith@example.com',
       password: 'hashedpassword123',
       business_name: 'Smith Solutions',
-      notification_sending: true,
-      send_email_alerts: true,
-      deadline_notify: false,
     },
   });
 

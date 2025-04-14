@@ -18,6 +18,10 @@ export class CreateUserDto implements User {
   @ApiProperty()
   @IsNotEmpty()
   username: string | null;
+  @IsString()
+  @ApiProperty()
+  @IsNotEmpty()
+  role: string | null;
   @IsEmail()
   @ApiProperty()
   @IsNotEmpty()

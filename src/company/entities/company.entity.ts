@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Company } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IsDecimal, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDecimal,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 export class CompanyEntity implements Company {
   constructor(partial: Partial<Company> | null) {
     if (partial) {
@@ -15,6 +21,9 @@ export class CompanyEntity implements Company {
   @ApiProperty()
   @IsString()
   company_name: string;
+  @ApiProperty()
+  @IsArray()
+  holidays: string[];
   @ApiProperty()
   @IsString()
   @IsOptional()
