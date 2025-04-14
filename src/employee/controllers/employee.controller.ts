@@ -73,5 +73,8 @@ export class EmployeeController {
       console.log(error);
     }
   }
-  // @Get("group-by-trades")
+  @Get('monthly-stats')
+  async getMonthlyStats() {
+    return await this.employeeService.getMonthlyStatistics();
+  }
 }

@@ -96,6 +96,53 @@ export class EmployeeService {
       console.log(error);
     }
   }
+
+  private months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  async getMonthlyStatistics(): Promise<any[]> {
+    const employees = await this.prisma.employee.findMany({
+      include: { trade_position: true },
+    });
+
+    const dataMap: { [key: string]: { cost: number; planned: number } } = {};
+    for (let i = 0; i < 12; i++) {
+      const month = this.months[i];
+      dataMap[month] = { cost: 0, planned: 0 };
+    }
+
+    employees.forEach((employee) => {
+      const date = new Date(employee.created_date);
+      const monthIndex = date.getMonth();
+      const monthName = this.months[monthIndex];
+
+      dataMap[monthName].cost += Number(employee.daily_rate);
+      dataMap[monthName].planned += Number(
+        employee.trade_position.daily_planned_cost,
+      );
+    });
+
+    const currentMonth = new Date().getMonth();
+
+    return this.months.map((month, index) => ({
+      month,
+      cost: dataMap[month].cost,
+      planned: dataMap[month].planned,
+      ...(index === currentMonth ? { highlight: true } : {}),
+    }));
+  }
   async getEmployees() {
     const employees = await this.prisma.employee.findMany({
       include: { trade_position: true, company: true, attendance: true },
