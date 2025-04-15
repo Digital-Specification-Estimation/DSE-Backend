@@ -57,17 +57,48 @@ export class AuthService {
     };
   }
 
-  async signup(createUserDto: CreateUserDto) {
+  async signup(createUserDto: CreateUserDto | any) {
     try {
-      // Hash password if it exists
+      // Hash the password if it exists
+
+      const user = await this.prisma.user.findFirst({
+        where: { email: createUserDto.email },
+      });
+      const isMatch = await this.passwordService.comparePasswords(
+        createUserDto.password,
+        user?.password ? user?.password : '',
+      );
+      console.log(createUserDto.password);
+      // If user exists
+      if (user && isMatch) {
+        // Check if the role already exists
+        const hasRole = user.role.includes(createUserDto.role);
+        if (hasRole) {
+          throw new Error('User already exists with this role.');
+        }
+
+        // Add the new role
+        const updatedUser = await this.prisma.user.update({
+          where: { email: createUserDto.email },
+          data: { role: [...user.role, createUserDto.role] },
+        });
+
+        return updatedUser;
+      }
       if (createUserDto.password) {
         createUserDto.password = await this.passwordService.hashPassword(
           createUserDto.password,
         );
       }
-
-      // Attempt to create the user
-      return await this.prisma.user.create({ data: createUserDto });
+      // Else, create the user
+      return await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          role: Array.isArray(createUserDto.role)
+            ? createUserDto.role
+            : [createUserDto.role],
+        },
+      });
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -79,10 +110,11 @@ export class AuthService {
 
       console.error('Signup Error:', error);
       throw new InternalServerErrorException(
-        'An error occurred while return user;creating the user.',
+        'An error occurred while creating the user.',
       );
     }
   }
+
   async validateGoogleUser(profile: any) {
     let user = await this.userService.findByGoogleId(profile.providerId);
     if (!user) {
