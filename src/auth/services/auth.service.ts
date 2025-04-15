@@ -31,8 +31,12 @@ export class AuthService {
     private prisma: PrismaService,
     private passwordService: PasswordService,
   ) {}
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.userService.findOne(email);
+  async validateUser(
+    email: string,
+    password: string,
+    role: string,
+  ): Promise<any> {
+    const user = await this.userService.findOne(email, role);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -68,13 +72,12 @@ export class AuthService {
         createUserDto.password,
         user?.password ? user?.password : '',
       );
-      console.log(createUserDto.password);
       // If user exists
       if (user && isMatch) {
         // Check if the role already exists
         const hasRole = user.role.includes(createUserDto.role);
         if (hasRole) {
-          throw new Error('User already exists with this role.');
+          throw new ConflictException('User already exists with this role.');
         }
 
         // Add the new role
@@ -107,7 +110,9 @@ export class AuthService {
           );
         }
       }
-
+      if (error.message == 'User already exists with this role.') {
+        throw new ConflictException('User already exists with this role.');
+      }
       console.error('Signup Error:', error);
       throw new InternalServerErrorException(
         'An error occurred while creating the user.',
