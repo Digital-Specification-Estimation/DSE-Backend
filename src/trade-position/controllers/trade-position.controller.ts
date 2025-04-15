@@ -107,4 +107,8 @@ export class TradePositionController {
       locationName,
     );
   }
+  @Patch('unassign-project/:id')
+  async unassignProject(@Param('id') id: string) {
+    return this.tradePositionService.unassignProject(id);
+  }
 }

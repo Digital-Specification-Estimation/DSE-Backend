@@ -16,6 +16,23 @@ export class TradePositionService {
       console.log(error);
     }
   }
+
+  async unassignProject(id: string) {
+    const existing = await this.prisma.tradePosition.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('TradePosition not found');
+    }
+
+    return this.prisma.tradePosition.update({
+      where: { id },
+      data: {
+        projectId: null,
+      },
+    });
+  }
   async editTrade(updateTrade: UpdateTradePositionDto) {
     if (!updateTrade.id) {
       throw new NotFoundException('the trade id not found');
