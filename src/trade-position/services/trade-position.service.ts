@@ -20,7 +20,6 @@ export class TradePositionService {
     if (!updateTrade.id) {
       throw new NotFoundException('the trade id not found');
     }
-    console.log('working on the edit endpoint');
     if (await this.tradeExists(updateTrade.id)) {
       return await this.prisma.tradePosition.update({
         where: { id: updateTrade.id },
@@ -30,6 +29,7 @@ export class TradePositionService {
       throw new NotFoundException('the trade not found');
     }
   }
+
   async deleteTrade(id: string) {
     if (!id) {
       throw new NotFoundException('the trade id not found');
@@ -41,9 +41,14 @@ export class TradePositionService {
     }
   }
   async getTrades() {
-    return await this.prisma.tradePosition.findMany({
-      include: { project: true },
+    const trades = await this.prisma.tradePosition.findMany({
+      include: {
+        project: true,
+        employees: { include: { trade_position: true } },
+      },
     });
+
+    return trades;
   }
   async getTradesNumber() {
     return await this.prisma.tradePosition.count();

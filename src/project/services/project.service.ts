@@ -42,20 +42,26 @@ export class ProjectService {
     }
   }
   async getProjects() {
-    const projects: any = this.prisma.project.findMany({
-      include: { trade_positions: { include: { employees: true } } },
-    });
-    return (await projects).map((project) => ({
-      ...project,
-      // trade_positions: [
-      //   ...project.trade_positions,
-      //   daily_planned_cost:
-      //     project.trade_positions.daily_planned_cost?.toString(),
-      // ],
-      start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
-      end_date: format(new Date(project.end_date), 'dd/MM/yyyy'),
-    }));
+    try {
+      const projects = await this.prisma.project.findMany({
+        include: { trade_positions: { include: { employees: true } } },
+      });
+
+      return projects.map((project) => ({
+        ...project,
+        trade_positions: project.trade_positions.map((position) => ({
+          ...position,
+          daily_planned_cost: position.daily_planned_cost?.toString(),
+        })),
+        start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
+        end_date: format(new Date(project.end_date), 'dd/MM/yyyy'),
+      }));
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      throw error; // or return a custom error object
+    }
   }
+
   async getProjectById(id: string) {
     if (await this.projectExists(id)) {
       return this.prisma.project.findUnique({ where: { id } });
