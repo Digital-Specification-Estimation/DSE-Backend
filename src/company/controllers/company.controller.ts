@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { CompanyService } from '../services/company.service';
 import { CreateCompanyDto } from '../dto/create-company.dto';
@@ -17,5 +18,17 @@ export class CompanyController {
   @Get('/companies')
   async getCompanies() {
     return await this.companyService.getCompanies();
+  }
+  @Post('add')
+  async addCompanies(@Body() createCompanyDto: CreateCompanyDto) {
+    return await this.companyService.addCompany(createCompanyDto);
+  }
+  @Put('edit')
+  async editCompany(@Body() updateCompanyDto: UpdateCompanyDto) {
+    return await this.companyService.editCompany(updateCompanyDto);
+  }
+  @Delete('delete/:id')
+  async deleteCompany(@Param('id') id: string) {
+    return await this.companyService.deleteCompany(id);
   }
 }

@@ -9,4 +9,16 @@ export class CompanyService {
   async getCompanies() {
     return this.prismaService.company.findMany();
   }
+  async addCompany(createCompanyDto: CreateCompanyDto) {
+    return await this.prismaService.company.create({ data: createCompanyDto });
+  }
+  async editCompany(updateCompanyDto: UpdateCompanyDto) {
+    return await this.prismaService.company.update({
+      where: { id: updateCompanyDto.id },
+      data: updateCompanyDto,
+    });
+  }
+  async deleteCompany(id: string) {
+    return await this.prismaService.company.delete({ where: { id } });
+  }
 }
