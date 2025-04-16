@@ -44,7 +44,6 @@ export class CompanyEntity implements Company {
   weekly_work_limit: number;
   @ApiProperty()
   @IsOptional()
-  // @IsDecimal()
   @Transform(({ value }) => parseFloat(value))
   overtime_rate: Decimal;
   @ApiProperty()

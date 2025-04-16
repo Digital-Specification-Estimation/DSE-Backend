@@ -9,10 +9,12 @@ import * as passport from 'passport';
 import * as cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { PrismaSessionStore } from './prisma/utils/prismaSession.store';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 dotenv.config();
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useStaticAssets(join(__dirname, '..', 'uploads'));
   app.enableCors({
     origin: ['http://localhost:3000', 'https://digitalestimation.vercel.app'],
     credentials: true,

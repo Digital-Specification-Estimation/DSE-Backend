@@ -68,9 +68,17 @@ export class AuthController {
   }
   @UseGuards(AuthenticatedGuard)
   @Get('session')
-  getSession(@Request() req) {
+  getSession(@Request() req: any) {
     if (req.user) {
-      return { user: req.user };
+      return {
+        user: {
+          ...req.user,
+          companies: req.user.companies.map((company) => ({
+            ...company,
+            overtime_rate: company.overtime_rate?.toString(),
+          })),
+        },
+      };
     } else {
       return { message: 'No user in session' };
     }
