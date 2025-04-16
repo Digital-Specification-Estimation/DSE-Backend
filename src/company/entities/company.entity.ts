@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Company } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsDecimal,
@@ -22,12 +23,13 @@ export class CompanyEntity implements Company {
   @IsString()
   company_name: string;
   @ApiProperty()
+  @IsOptional()
   @IsArray()
   holidays: string[];
   @ApiProperty()
   @IsString()
   @IsOptional()
-  company_profile: string;
+  company_profile: string | null;
   @ApiProperty()
   @IsString()
   @IsOptional()
@@ -41,15 +43,16 @@ export class CompanyEntity implements Company {
   @IsOptional()
   weekly_work_limit: number;
   @ApiProperty()
-  @IsDecimal()
   @IsOptional()
+  // @IsDecimal()
+  @Transform(({ value }) => parseFloat(value))
   overtime_rate: Decimal;
   @ApiProperty()
   @IsDecimal()
   @IsOptional()
-  daily_total_actual_cost: Decimal;
+  daily_total_actual_cost: Decimal | null;
   @ApiProperty()
   @IsDecimal()
   @IsOptional()
-  daily_total_planned_cost: Decimal;
+  daily_total_planned_cost: Decimal | null;
 }

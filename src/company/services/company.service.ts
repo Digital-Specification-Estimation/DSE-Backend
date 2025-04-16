@@ -7,10 +7,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CompanyService {
   constructor(private readonly prismaService: PrismaService) {}
   async getCompanies() {
-    return this.prismaService.company.findMany();
+    return await this.prismaService.company.findMany();
   }
   async addCompany(createCompanyDto: CreateCompanyDto) {
-    return await this.prismaService.company.create({ data: createCompanyDto });
+    try {
+      console.log(createCompanyDto);
+      return await this.prismaService.company.create({
+        data: createCompanyDto,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
   async editCompany(updateCompanyDto: UpdateCompanyDto) {
     return await this.prismaService.company.update({

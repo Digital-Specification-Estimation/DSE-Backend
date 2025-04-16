@@ -16,7 +16,10 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
   async findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { companies: true },
+    });
   }
   async findByGoogleId(googleId: string): Promise<User | null> {
     if (googleId == null) {

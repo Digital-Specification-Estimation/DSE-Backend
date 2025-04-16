@@ -13,6 +13,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { PasswordService } from './password.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { connect } from 'http2';
 interface UserInt {
   provider: string;
   providerId: string;
@@ -100,6 +101,7 @@ export class AuthService {
           role: Array.isArray(createUserDto.role)
             ? createUserDto.role
             : [createUserDto.role],
+          companies: { connect: { id: createUserDto.company_id } },
         },
       });
     } catch (error) {

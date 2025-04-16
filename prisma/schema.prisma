@@ -34,7 +34,7 @@ model User {
 
 model Company {
   id                    String        @id @default(uuid())
-  company_profile       String
+  company_profile       String?
   company_name          String
   business_type         String
   standard_work_hours   Int
@@ -43,8 +43,8 @@ model Company {
   overtime_rate         Decimal
   users                 User[]        @relation("UserCompanies")
   employees             Employee[]
-  daily_total_planned_cost Decimal
-  daily_total_actual_cost Decimal
+  daily_total_planned_cost Decimal?
+  daily_total_actual_cost Decimal?
 }
 
 model Attendance {
