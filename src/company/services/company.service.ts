@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCompanyDto } from '../dto/create-company.dto';
 import { UpdateCompanyDto } from '../dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CompanyEntity } from '../entities/company.entity';
 
 @Injectable()
 export class CompanyService {
@@ -19,10 +20,24 @@ export class CompanyService {
       console.log(error);
     }
   }
-  async editCompany(updateCompanyDto: UpdateCompanyDto) {
+  async getCompanyById(id: string) {
+    const company: CompanyEntity | null =
+      await this.prismaService.company.findUnique({
+        where: { id },
+      });
+    return { ...company, overtime_rate: company?.overtime_rate.toString() };
+  }
+  async editCompany(
+    updateCompanyDto: UpdateCompanyDto,
+    image: Express.Multer.File,
+  ) {
+    // console.log(image);
     return await this.prismaService.company.update({
       where: { id: updateCompanyDto.id },
-      data: updateCompanyDto,
+      data: {
+        ...updateCompanyDto,
+        company_profile: image ? image.path : '',
+      },
     });
   }
   async deleteCompany(id: string) {

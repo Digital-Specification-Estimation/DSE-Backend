@@ -9,6 +9,7 @@ import {
   Put,
   UseInterceptors,
   UploadedFile,
+  Request,
 } from '@nestjs/common';
 import { CompanyService } from '../services/company.service';
 import { CreateCompanyDto } from '../dto/create-company.dto';
@@ -22,6 +23,12 @@ export class CompanyController {
   @Get('/companies')
   async getCompanies() {
     return await this.companyService.getCompanies();
+  }
+
+  @Post('add')
+  async addCompanies(@Body() createCompanyDto: CreateCompanyDto) {
+    console.log(createCompanyDto);
+    return await this.companyService.addCompany(createCompanyDto);
   }
   @UseInterceptors(
     FileInterceptor('image', {
@@ -43,21 +50,19 @@ export class CompanyController {
       },
     }),
   )
-  @Post('add')
-  async addCompanies(@Body() createCompanyDto: CreateCompanyDto) {
-    console.log(createCompanyDto);
-    return await this.companyService.addCompany(createCompanyDto);
-  }
   @Put('edit')
   async editCompany(
     @UploadedFile() image: Express.Multer.File,
-
     @Body() updateCompanyDto: UpdateCompanyDto,
   ) {
-    return await this.companyService.editCompany(updateCompanyDto);
+    return await this.companyService.editCompany(updateCompanyDto, image);
   }
   @Delete('delete/:id')
   async deleteCompany(@Param('id') id: string) {
     return await this.companyService.deleteCompany(id);
+  }
+  @Get('get/:id')
+  async getCompanyById(@Param('id') id: string) {
+    return await this.companyService.getCompanyById(id);
   }
 }

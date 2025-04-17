@@ -35,10 +35,12 @@ export class CompanyEntity implements Company {
   @IsOptional()
   business_type: string;
   @ApiProperty()
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsOptional()
   standard_work_hours: number;
   @ApiProperty()
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsOptional()
   weekly_work_limit: number;
