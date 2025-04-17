@@ -54,4 +54,6 @@ export class UsersController {
   async deleteUser(@Param('id') id: string) {
     return this.userService.deleteUser(id);
   }
+  @Patch('update-previeleges')
+  async updatePrevieleges(@Body() roleAndPrevilege: RolePrevielegeInt[]) {}
 }

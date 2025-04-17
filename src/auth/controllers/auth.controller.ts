@@ -40,6 +40,7 @@ export class AuthController {
   @Post('login')
   async login(@Request() req) {
     const data = await this.authService.login(req.user);
+    console.log(req.user);
     return data;
   }
   @Post('signup')

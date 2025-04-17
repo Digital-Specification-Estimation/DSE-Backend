@@ -22,12 +22,20 @@ model User {
   role                 String[]
   refresh_token        String?
   company_id          String?
+  notification_sending Boolean?
+  send_email_alerts   Boolean?
+  deadline_notify     Boolean?
+  remind_approvals    Boolean?
   business_name       String?
+   salary_calculation String?
+  currency String?
+  payslip_format String?
+  current_role        String?
   google_id           String?
   apple_id            String?
   notifications       Notification[]
   image_url           String?
-  settings            UserSettings?
+  settings            UserSettings[]  @relation("userSettings")
   companies           Company[]    @relation("UserCompanies")
   logs                Log[]
 }
@@ -123,15 +131,9 @@ model Notification {
 
 model UserSettings{
   id String @id @default(uuid())
-  userId String @unique
-  salary_calculation String?
-  currency String?
-  payslip_format String?
-  user User @relation(fields: [userId],references: [id], onDelete: Cascade, onUpdate: Cascade)
-  notification_sending Boolean?
-  send_email_alerts   Boolean?
-  deadline_notify     Boolean?
-  remind_approvals    Boolean?
+  // userId String @unique
+  role   String?  
+  user User[] @relation("userSettings")
   full_access         Boolean?
   approve_attendance  Boolean?
   manage_payroll      Boolean?

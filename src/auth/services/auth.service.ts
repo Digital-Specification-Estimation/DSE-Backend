@@ -49,6 +49,10 @@ export class AuthService {
       );
     }
     if (user && isMatch) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { current_role: role },
+      });
       const { password, ...result } = user;
       return result;
     }
@@ -58,6 +62,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     return {
       user,
+
       // access_token: this.jwtService.sign(payload),
     };
   }

@@ -16,7 +16,8 @@ export class UserEntity implements User {
   username: string | null;
   @ApiProperty({ required: false })
   role: string[];
-
+  @ApiProperty({ required: false })
+  current_role: string | null;
   @ApiProperty({ required: false })
   email: string | null;
 

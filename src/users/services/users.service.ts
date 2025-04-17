@@ -69,4 +69,12 @@ export class UsersService {
       throw new NotFoundException('user not found');
     }
   }
+  // async updatePrevieleges(roleAndPrevilege: RolePrevielegeInt[]) {
+  //   roleAndPrevilege.forEach(async (data) => {
+  //     await this.prisma.user.update({
+  //       where: { role: { equals: data.role } },
+  //       data: { settings: { update: {} } },
+  //     });
+  //   });
+  // }
 }
