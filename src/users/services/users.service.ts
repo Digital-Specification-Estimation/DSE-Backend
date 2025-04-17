@@ -10,6 +10,7 @@ export class UsersService {
   async findOne(email: string, role: string): Promise<User | null> {
     return this.prisma.user.findFirst({
       where: { email, role: { hasSome: [role] } },
+      include: { companies: true, settings: true },
     });
   }
   async findAll() {
@@ -18,7 +19,7 @@ export class UsersService {
   async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
-      include: { companies: true },
+      include: { companies: true, settings: true },
     });
   }
   async findByGoogleId(googleId: string): Promise<User | null> {

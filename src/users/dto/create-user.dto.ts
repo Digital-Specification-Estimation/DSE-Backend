@@ -65,7 +65,23 @@ export class CreateUserDto implements User {
   @IsBoolean()
   deadline_notify: boolean | null;
   @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  remind_approvals: boolean | null;
+  @ApiProperty()
   @IsString()
   @IsOptional()
   image_url: string | null;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  salary_calculation: string | null;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  currency: string | null;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  payslip_format: string | null;
 }
