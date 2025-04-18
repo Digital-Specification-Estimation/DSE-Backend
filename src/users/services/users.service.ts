@@ -70,12 +70,78 @@ export class UsersService {
       throw new NotFoundException('user not found');
     }
   }
-  // async updatePrevieleges(roleAndPrevilege: RolePrevielegeInt[]) {
-  //   roleAndPrevilege.forEach(async (data) => {
-  //     await this.prisma.user.update({
-  //       where: { role: { equals: data.role } },
-  //       data: { settings: { update: {} } },
-  //     });
-  //   });
-  // }
+  async updatePrevieleges(roleAndPrevileges: RolePrevielegeInt[]) {
+    roleAndPrevileges.map(async (roleAndPrevilege: RolePrevielegeInt) => {
+      const settingToUpdate = await this.prisma.userSettings.findFirst({
+        where: { role: roleAndPrevilege.role },
+      });
+      if (!settingToUpdate) {
+        throw new Error('setting to update is not available');
+      }
+      roleAndPrevilege.permissions.map(async (previelege: string) => {
+        switch (previelege) {
+          case 'Full access':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { full_access: true },
+            });
+            break;
+          case 'Approve attendance':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { approve_attendance: true },
+            });
+            break;
+          case 'Manage payroll':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { manage_payroll: true },
+            });
+            break;
+          case 'View reports':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { view_reports: true },
+            });
+
+            break;
+          case 'Approve leaves':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { approve_leaves: true },
+            });
+
+            break;
+          case 'View payslips':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { view_payslip: true },
+            });
+
+            break;
+          case 'Mark attendance':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { mark_attendance: true },
+            });
+
+            break;
+          case 'Manage employees':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { manage_employees: true },
+            });
+
+            break;
+          case 'Generate reports':
+            await this.prisma.userSettings.update({
+              where: { id: settingToUpdate.id },
+              data: { generate_reports: true },
+            });
+
+            break;
+        }
+      });
+    });
+  }
 }

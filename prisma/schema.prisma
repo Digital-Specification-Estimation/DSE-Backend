@@ -141,4 +141,6 @@ model UserSettings{
   approve_leaves      Boolean?
   view_payslip        Boolean?
   mark_attendance     Boolean?
+  manage_employees    Boolean?
+  generate_reports    Boolean?
 }
