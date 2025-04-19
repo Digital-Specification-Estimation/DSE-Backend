@@ -29,7 +29,7 @@ export class UsersController {
     const users = this.userService.findAll();
     return (await users).map((user) => new UserEntity(user));
   }
-  @Get(':id')
+  @Get('user/:id')
   async getUser(@Param('id') id: string) {
     return new UserEntity(await this.userService.findById(id));
   }

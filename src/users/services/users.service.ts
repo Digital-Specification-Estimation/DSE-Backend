@@ -218,6 +218,13 @@ export class UsersService {
     return 'updating previeleges completed';
   }
   async getPrevieleges() {
-    return this.prisma.userSettings.findMany();
+    const settings = await this.prisma.userSettings.findMany();
+    return settings.map((setting) => {
+      const { id, role, ...permissions } = setting;
+      return {
+        role,
+        permissions: { ...permissions },
+      };
+    });
   }
 }
