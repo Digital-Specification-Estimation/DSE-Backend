@@ -55,5 +55,15 @@ export class UsersController {
     return this.userService.deleteUser(id);
   }
   @Patch('update-previeleges')
-  async updatePrevieleges(@Body() roleAndPrevilege: RolePrevielegeInt[]) {}
+  async updatePrevieleges(@Body() roleAndPrevilege: RolePrevielegeInt[]) {
+    return this.userService.updatePrevieleges(roleAndPrevilege);
+  }
+  @Patch('single-update-previeleges')
+  async singleUpdatePrevieleges(@Body() roleAndPrevilege: RolePrevielegeInt) {
+    return this.userService.singleUpdatePrevieleges(roleAndPrevilege);
+  }
+  @Get('get-previeleges')
+  async getPrevieleges() {
+    return this.userService.getPrevieleges();
+  }
 }
