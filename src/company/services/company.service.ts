@@ -31,14 +31,22 @@ export class CompanyService {
     updateCompanyDto: UpdateCompanyDto,
     image: Express.Multer.File,
   ) {
-    // console.log(image);
-    return await this.prismaService.company.update({
-      where: { id: updateCompanyDto.id },
-      data: {
-        ...updateCompanyDto,
-        company_profile: image ? image.path : '',
-      },
-    });
+    if (image) {
+      return await this.prismaService.company.update({
+        where: { id: updateCompanyDto.id },
+        data: {
+          ...updateCompanyDto,
+          company_profile: image.path,
+        },
+      });
+    } else {
+      return await this.prismaService.company.update({
+        where: { id: updateCompanyDto.id },
+        data: {
+          ...updateCompanyDto,
+        },
+      });
+    }
   }
   async deleteCompany(id: string) {
     return await this.prismaService.company.delete({ where: { id } });
