@@ -26,10 +26,10 @@ model User {
   send_email_alerts   Boolean?
   deadline_notify     Boolean?
   remind_approvals    Boolean?
-  business_name       String?
-   salary_calculation String?
-  currency String?
-  payslip_format String?
+  business_name       String?  
+   salary_calculation String?    @default("daily rate")
+  currency String?               @default("USD")
+  payslip_format String?          @default("PDF")
   current_role        String?
   google_id           String?
   apple_id            String?
