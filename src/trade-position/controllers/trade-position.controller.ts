@@ -95,8 +95,8 @@ export class TradePositionController {
   }
 
   @Delete('delete/:id')
-  async deleteTrade(@Param('id') id: string) {
-    return await this.tradePositionService.deleteTrade(id);
+  async deleteTrade(@Param('id') id: string, @Request() req: any) {
+    return await this.tradePositionService.deleteTrade(id, req.user.id);
   }
   @Put('edit')
   async editTrade(@Body() updateTrade: UpdateTradePositionDto) {
@@ -113,7 +113,7 @@ export class TradePositionController {
     );
   }
   @Patch('unassign-project/:id')
-  async unassignProject(@Param('id') id: string) {
-    return this.tradePositionService.unassignProject(id);
+  async unassignProject(@Param('id') id: string, @Request() req: any) {
+    return this.tradePositionService.unassignProject(id, req.user.id);
   }
 }

@@ -27,7 +27,7 @@ export class TradePositionService {
     }
   }
 
-  async unassignProject(id: string) {
+  async unassignProject(id: string, userId: string) {
     const existing = await this.prisma.tradePosition.findUnique({
       where: { id },
     });
@@ -43,7 +43,8 @@ export class TradePositionService {
       },
     });
     if (unassignedProject) {
-      await this.notificationGateWay.BroadCastMessage(
+      await this.notificationGateWay.sendBroadcastNotification(
+        userId,
         `${unassignedProject.trade_name} removed from a project`,
       );
     }
@@ -63,7 +64,7 @@ export class TradePositionService {
     }
   }
 
-  async deleteTrade(id: string) {
+  async deleteTrade(id: string, userId: string) {
     if (!id) {
       throw new NotFoundException('the trade id not found');
     }
@@ -72,10 +73,10 @@ export class TradePositionService {
         where: { id },
       });
       if (deletedTrade) {
-        await this.notificationGateWay.BroadCastMessage(
-          `new trade called ${deletedTrade.trade_name} deleted`,
+        await this.notificationGateWay.sendBroadcastNotification(
+          userId,
+          `Trade called ${deletedTrade.trade_name} deleted`,
         );
-        console.log('message of delete sent');
       }
       return deletedTrade;
     } else {
