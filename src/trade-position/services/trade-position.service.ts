@@ -1,25 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Request } from '@nestjs/common';
 import { CreateTradePositionDto } from '../dto/create-trade-position.dto';
 import { UpdateTradePositionDto } from '../dto/update-trade-position.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TradePosition } from '@prisma/client';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
-
 @Injectable()
 export class TradePositionService {
   constructor(
     private prisma: PrismaService,
     private notificationGateWay: NotificationsGateway,
   ) {}
-  async addTrade(createTrade: CreateTradePositionDto) {
+  async addTrade(createTrade: CreateTradePositionDto, userId: string) {
     try {
       const newTrade = await this.prisma.tradePosition.create({
         data: { ...createTrade },
       });
       if (newTrade) {
-        // await this.notificationGateWay.sendBroadcastNotification(
-        //   `new trade called ${newTrade.trade_name} created`,
-        // );
+        await this.notificationGateWay.sendBroadcastNotification(
+          userId,
+          `new trade called ${newTrade.trade_name} created`,
+        );
       }
       return newTrade;
     } catch (error) {

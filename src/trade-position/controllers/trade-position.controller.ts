@@ -12,7 +12,6 @@ import {
 import { CreateTradePositionDto } from '../dto/create-trade-position.dto';
 import { UpdateTradePositionDto } from '../dto/update-trade-position.dto';
 import { TradePositionService } from '../services/trade-position.service';
-import { Request as Req } from 'express';
 
 @Controller('trade-position')
 export class TradePositionController {
@@ -20,10 +19,10 @@ export class TradePositionController {
   @Post('add')
   async addTrade(
     @Body() createTrade: CreateTradePositionDto,
-    @Request() req: Req,
+    @Request() req: any,
   ) {
     console.log(req.user);
-    return await this.tradePositionService.addTrade(createTrade);
+    return await this.tradePositionService.addTrade(createTrade, req.user.id);
   }
   @Get('get/:id')
   async getTrade(@Param('id') id: string) {
