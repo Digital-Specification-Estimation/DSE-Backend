@@ -7,16 +7,22 @@ import {
   Param,
   Delete,
   Put,
+  Request,
 } from '@nestjs/common';
 import { CreateTradePositionDto } from '../dto/create-trade-position.dto';
 import { UpdateTradePositionDto } from '../dto/update-trade-position.dto';
 import { TradePositionService } from '../services/trade-position.service';
+import { Request as Req } from 'express';
 
 @Controller('trade-position')
 export class TradePositionController {
   constructor(private readonly tradePositionService: TradePositionService) {}
   @Post('add')
-  async addTrade(@Body() createTrade: CreateTradePositionDto) {
+  async addTrade(
+    @Body() createTrade: CreateTradePositionDto,
+    @Request() req: Req,
+  ) {
+    console.log(req.user);
     return await this.tradePositionService.addTrade(createTrade);
   }
   @Get('get/:id')

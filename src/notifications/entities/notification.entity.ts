@@ -15,6 +15,9 @@ export class NotificationEntity implements Notification {
   @ApiProperty()
   @IsOptional()
   user_id: string;
+  @ApiProperty()
+  @IsOptional()
+  createdAt: Date;
   @IsBoolean()
   @ApiProperty()
   @IsOptional()
