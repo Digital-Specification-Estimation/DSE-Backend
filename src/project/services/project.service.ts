@@ -3,23 +3,41 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProjectDto } from '../dto/update-project.dto';
 import { format } from 'date-fns';
+import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 
 @Injectable()
 export class ProjectService {
-  constructor(private prisma: PrismaService) {}
-  async addProject(createProject: CreateProjectDto) {
+  constructor(
+    private prisma: PrismaService,
+    private notificationGateway: NotificationsGateway,
+  ) {}
+  async addProject(createProject: CreateProjectDto, userId: string) {
     console.log(createProject);
-    return this.prisma.project.create({
+    const project = await this.prisma.project.create({
       data: {
         ...createProject,
         start_date: new Date(createProject.start_date),
         end_date: new Date(createProject.end_date),
       },
     });
+    if (project) {
+      await this.notificationGateway.sendBroadcastNotification(
+        userId,
+        `New Project called ${project.project_name} created`,
+      );
+    }
+    return project;
   }
-  async deleteProject(id: string) {
+  async deleteProject(id: string, userId: string) {
     if (await this.projectExists(id)) {
-      return this.prisma.project.delete({ where: { id } });
+      const project = await this.prisma.project.delete({ where: { id } });
+      if (project) {
+        await this.notificationGateway.sendBroadcastNotification(
+          userId,
+          `Project called ${project.project_name} deleted`,
+        );
+      }
+      return project;
     } else {
       throw new NotFoundException('the project doesnot exists');
     }

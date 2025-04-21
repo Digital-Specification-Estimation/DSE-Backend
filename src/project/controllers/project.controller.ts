@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  Request,
 } from '@nestjs/common';
 import { ProjectService } from '../services/project.service';
 import { CreateProjectDto } from '../dto/create-project.dto';
@@ -24,15 +25,18 @@ export class ProjectController {
     return this.projectService.getProjectById(id);
   }
   @Post('add')
-  async addProject(@Body() createProject: CreateProjectDto) {
-    return this.projectService.addProject(createProject);
+  async addProject(
+    @Body() createProject: CreateProjectDto,
+    @Request() req: any,
+  ) {
+    return this.projectService.addProject(createProject, req.user.id);
   }
   @Put('edit')
   async updateProject(@Body() updateProject: UpdateProjectDto) {
     return this.projectService.editProject(updateProject);
   }
-  @Delete('delete')
-  async deleteProject(@Param('id') id: string) {
-    return this.projectService.deleteProject(id);
+  @Delete('delete/:id')
+  async deleteProject(@Param('id') id: string, @Request() req: any) {
+    return this.projectService.deleteProject(id, req.user.id);
   }
 }
