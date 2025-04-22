@@ -253,4 +253,51 @@ export class AttendanceService {
       },
     });
   }
+  async editStatusUser(
+    userId: string,
+    status: string,
+    date: string,
+    time: string,
+  ) {
+    if (time === 'today') {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      const attendanceExist = await this.prisma.attendance.findFirst({
+        where: {
+          date: { gte: startOfDay, lte: endOfDay },
+          employee_id: userId,
+        },
+      });
+      if (!attendanceExist) {
+        return await this.prisma.attendance.create({
+          data: {
+            employee_id: userId,
+            status,
+          },
+        });
+      }
+      return await this.prisma.attendance.updateMany({
+        where: {
+          employee_id: userId,
+          date: new Date(date),
+        },
+        data: {
+          status,
+        },
+      });
+    } else {
+      const update = await this.prisma.attendance.updateMany({
+        where: {
+          employee_id: userId,
+          date: new Date(date),
+        },
+        data: {
+          status,
+        },
+      });
+    }
+  }
 }

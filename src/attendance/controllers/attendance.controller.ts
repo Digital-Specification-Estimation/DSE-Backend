@@ -91,4 +91,25 @@ export class AttendanceController {
   getDailyAttendance() {
     return this.attendanceService.getDailyAttendancePercentage();
   }
+  @Put('edit-status-user')
+  async editStatusUser(
+    @Body()
+    body: {
+      employeeId: string;
+      status: string;
+      date: string;
+      time: string;
+    },
+  ) {
+    const { employeeId, status, date, time } = body;
+    console.log('data', employeeId, status, date);
+    const update = await this.attendanceService.editStatusUser(
+      employeeId,
+      status,
+      date,
+      time,
+    );
+    console.log('update', update);
+    return update;
+  }
 }
