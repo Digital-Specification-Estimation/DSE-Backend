@@ -278,6 +278,8 @@ export class EmployeeService {
           ...employee,
           budget_baseline: employee.budget_baseline?.toString(),
           daily_rate: employee.daily_rate?.toString(),
+          monthly_rate: employee.monthly_rate?.toString(),
+
           days_worked: Number(
             await this.getDaysBetween(
               employee.created_date
