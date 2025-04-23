@@ -112,7 +112,7 @@ export class EmployeeService {
     'Dec',
   ];
 
-  async getMonthlyStatistics(): Promise<any[]> {
+  async getMonthlyStatistics(salary_calculation: string): Promise<any[]> {
     const employees = await this.prisma.employee.findMany({
       include: { trade_position: true },
     });
@@ -127,11 +127,17 @@ export class EmployeeService {
       const date = new Date(employee.created_date);
       const monthIndex = date.getMonth();
       const monthName = this.months[monthIndex];
-
-      dataMap[monthName].cost += Number(employee.daily_rate);
-      dataMap[monthName].planned += Number(
-        employee.trade_position.daily_planned_cost,
-      );
+      if (salary_calculation === 'monthly rate') {
+        dataMap[monthName].cost += Number(employee.monthly_rate);
+        dataMap[monthName].planned += Number(
+          employee.trade_position.monthly_planned_cost,
+        );
+      } else {
+        dataMap[monthName].cost += Number(employee.daily_rate);
+        dataMap[monthName].planned += Number(
+          employee.trade_position.daily_planned_cost,
+        );
+      }
     });
 
     const currentMonth = new Date().getMonth();
@@ -143,7 +149,7 @@ export class EmployeeService {
       ...(index === currentMonth ? { highlight: true } : {}),
     }));
   }
-  async getEmployees() {
+  async getEmployees(salary_calculation: string) {
     const employees = await this.prisma.employee.findMany({
       include: {
         trade_position: { include: { project: true } },
@@ -154,18 +160,6 @@ export class EmployeeService {
 
     const employeeWithExtras = await Promise.all(
       employees.map(async (employee) => {
-        console.log(
-          'payroll ',
-          Number(employee.daily_rate ? employee.daily_rate : 0) *
-            Number(
-              await this.getDaysBetween(
-                employee.created_date
-                  ? new Date(employee.created_date)
-                  : new Date(),
-              ),
-            ),
-        );
-
         const sickDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
           'sick',
@@ -178,8 +172,85 @@ export class EmployeeService {
           employee.id,
           'unpaid',
         );
-        const plannedVsActual =
-          Number(
+        let plannedVsActual = 0;
+        let totalPlannedBytrade = 0;
+        let totalActualPayroll = 0;
+        if (salary_calculation === 'monthly rate') {
+          plannedVsActual =
+            Number(
+              Number(
+                employee.trade_position.monthly_planned_cost
+                  ? employee.trade_position.monthly_planned_cost
+                  : 0,
+              ) *
+                Number(
+                  await this.getDaysBetween(
+                    employee.created_date
+                      ? new Date(employee.created_date)
+                      : new Date(),
+                  ),
+                ),
+            ) -
+            Number(
+              Number(employee.monthly_rate ? employee.monthly_rate : 0) *
+                Number(
+                  await this.getDaysBetween(
+                    employee.created_date
+                      ? new Date(employee.created_date)
+                      : new Date(),
+                  ),
+                ),
+            );
+          totalPlannedBytrade = Number(
+            Number(
+              employee.trade_position.monthly_planned_cost
+                ? employee.trade_position.monthly_planned_cost
+                : 0,
+            ) *
+              Number(
+                await this.getDaysBetween(
+                  employee.created_date
+                    ? new Date(employee.created_date)
+                    : new Date(),
+                ),
+              ),
+          );
+          totalActualPayroll =
+            Number(employee.monthly_rate ? employee.monthly_rate : 0) *
+            Number(
+              await this.getDaysBetween(
+                employee.created_date
+                  ? new Date(employee.created_date)
+                  : new Date(),
+              ),
+            );
+        } else {
+          plannedVsActual =
+            Number(
+              Number(
+                employee.trade_position.daily_planned_cost
+                  ? employee.trade_position.daily_planned_cost
+                  : 0,
+              ) *
+                Number(
+                  await this.getDaysBetween(
+                    employee.created_date
+                      ? new Date(employee.created_date)
+                      : new Date(),
+                  ),
+                ),
+            ) -
+            Number(
+              Number(employee.daily_rate ? employee.daily_rate : 0) *
+                Number(
+                  await this.getDaysBetween(
+                    employee.created_date
+                      ? new Date(employee.created_date)
+                      : new Date(),
+                  ),
+                ),
+            );
+          totalPlannedBytrade = Number(
             Number(
               employee.trade_position.daily_planned_cost
                 ? employee.trade_position.daily_planned_cost
@@ -192,18 +263,17 @@ export class EmployeeService {
                     : new Date(),
                 ),
               ),
-          ) -
-          Number(
-            Number(employee.daily_rate ? employee.daily_rate : 0) *
-              Number(
-                await this.getDaysBetween(
-                  employee.created_date
-                    ? new Date(employee.created_date)
-                    : new Date(),
-                ),
-              ),
           );
-
+          totalActualPayroll =
+            Number(employee.daily_rate ? employee.daily_rate : 0) *
+            Number(
+              await this.getDaysBetween(
+                employee.created_date
+                  ? new Date(employee.created_date)
+                  : new Date(),
+              ),
+            );
+        }
         return {
           ...employee,
           budget_baseline: employee.budget_baseline?.toString(),
@@ -223,33 +293,12 @@ export class EmployeeService {
           sickDays,
           vacationDays,
           unpaidDays,
-          totalPlannedBytrade: Number(
-            Number(
-              employee.trade_position.daily_planned_cost
-                ? employee.trade_position.daily_planned_cost
-                : 0,
-            ) *
-              Number(
-                await this.getDaysBetween(
-                  employee.created_date
-                    ? new Date(employee.created_date)
-                    : new Date(),
-                ),
-              ),
-          ),
+          totalPlannedBytrade,
           plannedVsActual:
             plannedVsActual < 0
               ? `Over Budget ${plannedVsActual}`
               : `Planned ${plannedVsActual}`,
-          totalActualPayroll:
-            Number(employee.daily_rate ? employee.daily_rate : 0) *
-            Number(
-              await this.getDaysBetween(
-                employee.created_date
-                  ? new Date(employee.created_date)
-                  : new Date(),
-              ),
-            ),
+          totalActualPayroll,
         };
       }),
     );

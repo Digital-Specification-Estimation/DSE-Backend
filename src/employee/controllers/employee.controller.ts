@@ -9,6 +9,7 @@ import {
   Put,
   ParseIntPipe,
   Query,
+  Request,
 } from '@nestjs/common';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
@@ -38,8 +39,8 @@ export class EmployeeController {
     return await this.employeeService.deleteManyEmployees(idArray);
   }
   @Get('get/employees')
-  async getEmployees() {
-    return await this.employeeService.getEmployees();
+  async getEmployees(@Request() req: any) {
+    return await this.employeeService.getEmployees(req.user.salary_calculation);
   }
 
   @Get('get/number')
@@ -74,7 +75,9 @@ export class EmployeeController {
     }
   }
   @Get('monthly-stats')
-  async getMonthlyStats() {
-    return await this.employeeService.getMonthlyStatistics();
+  async getMonthlyStats(@Request() req: any) {
+    return await this.employeeService.getMonthlyStatistics(
+      req.user.salary_calculation,
+    );
   }
 }
