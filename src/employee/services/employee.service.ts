@@ -154,6 +154,18 @@ export class EmployeeService {
 
     const employeeWithExtras = await Promise.all(
       employees.map(async (employee) => {
+        console.log(
+          'payroll ',
+          Number(employee.daily_rate ? employee.daily_rate : 0) *
+            Number(
+              await this.getDaysBetween(
+                employee.created_date
+                  ? new Date(employee.created_date)
+                  : new Date(),
+              ),
+            ),
+        );
+
         const sickDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
           'sick',
@@ -253,9 +265,23 @@ export class EmployeeService {
   }
   async getDaysBetween(pastDate: Date) {
     const now = new Date();
-    const timeDifference = now.getTime() - pastDate.getTime();
+
+    // Strip time part from both dates
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const startOfPastDay = new Date(
+      pastDate.getFullYear(),
+      pastDate.getMonth(),
+      pastDate.getDate(),
+    );
+
+    const timeDifference = startOfToday.getTime() - startOfPastDay.getTime();
     return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   }
+
   async getPayrollForMonth(year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
@@ -306,7 +332,9 @@ export class EmployeeService {
     let totalPLannedPayrollOfEMployees = 0;
     let totalPayrollOfEmployees = 0;
     for (const employee of filteredEmployees) {
-      const daysFromCreation = await this.getDaysBetween(employee.created_date);
+      const daysFromCreation = await this.getDaysBetween(
+        new Date(employee.created_date),
+      );
       const totalEmployeePayrollToNow =
         Number(employee.daily_rate) * daysFromCreation;
       const totalPLannedEmployeePayrollToNow =

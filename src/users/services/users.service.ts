@@ -46,7 +46,12 @@ export class UsersService {
   async updateProfile(updateUserDto: UpdateUserDto, id: string) {
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
-      return this.prisma.user.update({ where: { id }, data: updateUserDto });
+      const update = await this.prisma.user.update({
+        where: { id },
+        data: updateUserDto,
+      });
+      console.log('user update', update);
+      return update;
     } else {
       return { message: 'user not found' };
     }
@@ -219,11 +224,17 @@ export class UsersService {
   }
   async getPrevieleges() {
     const settings = await this.prisma.userSettings.findMany();
+
     return settings.map((setting) => {
       const { id, role, ...permissions } = setting;
+
+      const truePermissions = Object.entries(permissions)
+        .filter(([_, value]) => value === true)
+        .map(([key, _]) => key);
+
       return {
         role,
-        permissions: { ...permissions },
+        permissions: truePermissions,
       };
     });
   }

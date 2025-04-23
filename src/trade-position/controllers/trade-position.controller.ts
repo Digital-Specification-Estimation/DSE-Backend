@@ -30,9 +30,23 @@ export class TradePositionController {
   }
   async getDaysBetween(pastDate: Date) {
     const now = new Date();
-    const timeDifference = now.getTime() - pastDate.getTime();
+
+    // Strip time part from both dates
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const startOfPastDay = new Date(
+      pastDate.getFullYear(),
+      pastDate.getMonth(),
+      pastDate.getDate(),
+    );
+
+    const timeDifference = startOfToday.getTime() - startOfPastDay.getTime();
     return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   }
+
   @Get('trades')
   async getTrades() {
     try {
@@ -83,6 +97,7 @@ export class TradePositionController {
             planned_costs,
             difference: (planned_costs - actual_cost).toFixed(2),
             daily_planned_cost: trade.daily_planned_cost?.toString(),
+            monthly_planned_cost: trade.monthly_planned_cost?.toString(),
           };
         }),
       );

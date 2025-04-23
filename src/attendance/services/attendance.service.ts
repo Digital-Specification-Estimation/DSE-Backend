@@ -44,7 +44,8 @@ export class AttendanceService {
     const now = new Date();
     const start = startOfMonth(now);
     const end = endOfMonth(now);
-
+    console.log('start', start);
+    console.log('end', end);
     // Get all employees
     const employees = await this.prisma.employee.findMany();
     const totalEmployees = employees.length;
@@ -56,10 +57,10 @@ export class AttendanceService {
           gte: start,
           lte: end,
         },
-        status: 'present',
+        status: { equals: 'present', mode: 'insensitive' },
       },
     });
-
+    console.log('records', attendanceRecords);
     // Initialize days in month
     const daysInMonth = getDate(end);
     const dailyAttendance: {
@@ -120,7 +121,10 @@ export class AttendanceService {
 
     const attendanceFilteredPreviousDay = await this.prisma.attendance.findMany(
       {
-        where: { date: previousStartDate, status },
+        where: {
+          date: previousStartDate,
+          status: { equals: status, mode: 'insensitive' },
+        },
       },
     );
 
@@ -153,7 +157,7 @@ export class AttendanceService {
     const attendancesFiltered = await this.prisma.attendance.findMany({
       where: {
         date: { gte: startOfDay, lt: endOfDay },
-        status,
+        status: { equals: status, mode: 'insensitive' },
       },
     });
 
@@ -182,7 +186,7 @@ export class AttendanceService {
       {
         where: {
           date: { gte: previousStartDate, lt: previousEndDate },
-          status,
+          status: { equals: status, mode: 'insensitive' },
         },
       },
     );
@@ -282,7 +286,7 @@ export class AttendanceService {
       return await this.prisma.attendance.updateMany({
         where: {
           employee_id: userId,
-          date: new Date(date),
+          date: { gte: startOfDay, lte: endOfDay },
         },
         data: {
           status,

@@ -34,7 +34,10 @@ export class EmployeeEntity implements Employee {
   @IsOptional()
   @IsDecimal()
   daily_rate: Decimal;
-
+  @ApiProperty()
+  @IsOptional()
+  @IsDecimal()
+  monthly_rate: Decimal | null;
   @ApiProperty()
   @IsOptional()
   @Type(() => Date)

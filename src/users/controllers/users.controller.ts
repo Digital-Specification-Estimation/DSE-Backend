@@ -41,7 +41,7 @@ export class UsersController {
   ) {
     return this.userService.updateProfile(updateUserDto, id);
   }
-  @Patch('profile/picture/:id')
+  @Patch('profile-picture/:id')
   @UseInterceptors(FileInterceptor('image', multerConfig))
   async updateProfilePicture(
     @UploadedFile() image: any,
