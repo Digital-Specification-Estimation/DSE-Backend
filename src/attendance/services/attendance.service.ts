@@ -229,18 +229,33 @@ export class AttendanceService {
   }
   @Cron(CronExpression.EVERY_DAY_AT_4PM)
   async createDefaultDailyAttendance() {
-    console.log('Running daily attendance creating job');
-    const employees = await this.prisma.employee.findMany();
-    const entries = employees.map((employee) => ({
-      employee_id: employee.id,
-      status: 'present',
-    }));
-    await this.prisma.attendance.createMany({
-      data: entries,
-      skipDuplicates: true,
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const attendancesFiltered = await this.prisma.attendance.findFirst({
+      where: {
+        date: { gte: startOfDay, lt: endOfDay },
+      },
     });
-    const today = new Date();
-    console.log('default attendance created for today', today);
+    if (!attendancesFiltered) {
+      console.log('Running daily attendance creating job');
+      const employees = await this.prisma.employee.findMany();
+      const entries = employees.map((employee) => ({
+        employee_id: employee.id,
+        status: 'present',
+      }));
+      await this.prisma.attendance.createMany({
+        data: entries,
+        skipDuplicates: true,
+      });
+      const today = new Date();
+      console.log('default attendance created for today', today);
+    } else {
+      console.log('attendance arleady made');
+    }
   }
   async editingAttendanceByDate(
     employeeId: string,

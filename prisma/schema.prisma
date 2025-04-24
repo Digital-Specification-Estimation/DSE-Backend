@@ -138,12 +138,12 @@ model UserSettings{
   role   String?  
   user User[] @relation("userSettings")
   full_access         Boolean?
-  approve_attendance  Boolean?
+  approve_attendance  Boolean? //done
   manage_payroll      Boolean?
   view_reports        Boolean?
   approve_leaves      Boolean?
-  view_payslip        Boolean?
-  mark_attendance     Boolean?
-  manage_employees    Boolean?
-  generate_reports    Boolean?
+  view_payslip        Boolean? //done
+  mark_attendance     Boolean?   //done
+  manage_employees    Boolean?  //done
+  generate_reports    Boolean? //done
 }
