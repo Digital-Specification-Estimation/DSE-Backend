@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  Request,
 } from '@nestjs/common';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
@@ -24,15 +25,18 @@ export class LocationController {
     return await this.locationService.getLocationById(id);
   }
   @Post('add')
-  async addLocation(@Body() createLocation: CreateLocationDto) {
-    return await this.locationService.addLocation(createLocation);
+  async addLocation(
+    @Body() createLocation: CreateLocationDto,
+    @Request() req: any,
+  ) {
+    return await this.locationService.addLocation(createLocation, req.user.id);
   }
   @Put('edit')
   async editLocation(@Body() updateLocation: UpdateLocationDto) {
     return await this.locationService.editLocation(updateLocation);
   }
   @Delete(':id')
-  async deleteLocation(@Param('id') id: string) {
-    return await this.locationService.deleteLocation(id);
+  async deleteLocation(@Param('id') id: string, @Request() req: any) {
+    return await this.locationService.deleteLocation(id, req.user.id);
   }
 }

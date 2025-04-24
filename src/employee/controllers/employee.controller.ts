@@ -20,16 +20,19 @@ import { strict } from 'assert';
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
   @Post('add')
-  async addEmployee(@Body() creatEmployee: CreateEmployeeDto) {
-    return await this.employeeService.addEmployee(creatEmployee);
+  async addEmployee(
+    @Body() creatEmployee: CreateEmployeeDto,
+    @Request() req: any,
+  ) {
+    return await this.employeeService.addEmployee(creatEmployee, req.user.id);
   }
   @Put('edit')
   async editEmployee(@Body() updateEmployee: UpdateEmployeeDto) {
     return await this.employeeService.editEmployee(updateEmployee);
   }
   @Delete('delete/:id')
-  async deleteEmployee(@Param('id') id: string) {
-    return await this.employeeService.deleteEmployee(id);
+  async deleteEmployee(@Param('id') id: string, @Request() req: any) {
+    return await this.employeeService.deleteEmployee(id, req.user.id);
   }
   // not tested
   //sample of ids passed -> 1,3,4,4

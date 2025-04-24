@@ -3,19 +3,30 @@ import { CreateCompanyDto } from '../dto/create-company.dto';
 import { UpdateCompanyDto } from '../dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CompanyEntity } from '../entities/company.entity';
+import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
+import { use } from 'passport';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private notificationGateway: NotificationsGateway,
+  ) {}
   async getCompanies() {
     return await this.prismaService.company.findMany();
   }
-  async addCompany(createCompanyDto: CreateCompanyDto) {
+  async addCompany(createCompanyDto: CreateCompanyDto, userId: string) {
     try {
-      console.log(createCompanyDto);
-      return await this.prismaService.company.create({
+      const company = await this.prismaService.company.create({
         data: createCompanyDto,
       });
+      if (company) {
+        await this.notificationGateway.sendBroadcastNotification(
+          userId,
+          `Company called ${company.company_name} is created`,
+        );
+      }
+      return company;
     } catch (error) {
       console.log(error);
     }
@@ -48,7 +59,14 @@ export class CompanyService {
       });
     }
   }
-  async deleteCompany(id: string) {
-    return await this.prismaService.company.delete({ where: { id } });
+  async deleteCompany(id: string, userId: string) {
+    const company = await this.prismaService.company.delete({ where: { id } });
+    if (company) {
+      await this.notificationGateway.sendBroadcastNotification(
+        userId,
+        `Company called ${company.company_name} is deleted`,
+      );
+    }
+    return company;
   }
 }

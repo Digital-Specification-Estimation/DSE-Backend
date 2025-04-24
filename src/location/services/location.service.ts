@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
+import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 
 @Injectable()
 export class LocationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationGateway: NotificationsGateway,
+  ) {}
   async getLocations() {
     return this.prisma.location.findMany();
   }
@@ -20,8 +24,17 @@ export class LocationService {
       throw new NotFoundException('the location doesnot exist');
     }
   }
-  async addLocation(createLocation: CreateLocationDto) {
-    return this.prisma.location.create({ data: { ...createLocation } });
+  async addLocation(createLocation: CreateLocationDto, userId: string) {
+    const location = await this.prisma.location.create({
+      data: { ...createLocation },
+    });
+    if (location) {
+      await this.notificationGateway.sendBroadcastNotification(
+        userId,
+        `Location called ${location.location_name} is created`,
+      );
+    }
+    return location;
   }
   async editLocation(updateLocation: UpdateLocationDto) {
     if (!updateLocation.id) {
@@ -36,9 +49,16 @@ export class LocationService {
       throw new NotFoundException('the location doesnot exist');
     }
   }
-  async deleteLocation(id: string) {
+  async deleteLocation(id: string, userId: string) {
     if (await this.locationExists(id)) {
-      return this.prisma.location.delete({ where: { id } });
+      const location = await this.prisma.location.delete({ where: { id } });
+      if (location) {
+        await this.notificationGateway.sendBroadcastNotification(
+          userId,
+          `Location called ${location.location_name} is deleted`,
+        );
+      }
+      return location;
     } else {
       throw new NotFoundException('the location doesnot exist');
     }

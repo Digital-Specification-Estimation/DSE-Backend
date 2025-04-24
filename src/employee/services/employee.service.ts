@@ -4,14 +4,25 @@ import { UpdateEmployeeDto } from '../dto/update-employee.dto';
 import { UsersService } from 'src/users/services/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NotFoundError } from 'rxjs';
+import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 
 @Injectable()
 export class EmployeeService {
-  constructor(private prisma: PrismaService) {}
-  async addEmployee(createEmployee: CreateEmployeeDto) {
-    return await this.prisma.employee.create({
+  constructor(
+    private prisma: PrismaService,
+    private notificationGateway: NotificationsGateway,
+  ) {}
+  async addEmployee(createEmployee: CreateEmployeeDto, userId: string) {
+    const employee = await this.prisma.employee.create({
       data: { ...createEmployee },
     });
+    if (employee) {
+      await this.notificationGateway.sendBroadcastNotification(
+        userId,
+        `Employee called ${employee.username} is created`,
+      );
+    }
+    return employee;
   }
   async editEmployee(updateEmployee: UpdateEmployeeDto) {
     if (!updateEmployee.id) {
@@ -26,9 +37,18 @@ export class EmployeeService {
       throw new NotFoundException('employee not found');
     }
   }
-  async deleteEmployee(employeeId: string) {
+  async deleteEmployee(employeeId: string, userId: string) {
     if (await this.employeeExists(employeeId)) {
-      return this.prisma.employee.delete({ where: { id: employeeId } });
+      const employee = await this.prisma.employee.delete({
+        where: { id: employeeId },
+      });
+      if (employee) {
+        await this.notificationGateway.sendBroadcastNotification(
+          userId,
+          `Employee called ${employee.username} is deleted`,
+        );
+      }
+      return employee;
     } else {
       throw new NotFoundException('employee not found');
     }
