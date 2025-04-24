@@ -76,79 +76,77 @@ export class UsersService {
     }
   }
   async updatePrevieleges(roleAndPrevileges: RolePrevielegeInt[]) {
-    roleAndPrevileges.map(async (roleAndPrevilege: RolePrevielegeInt) => {
+    const allPermissions = [
+      'Full access',
+      'Approve attendance',
+      'Manage payroll',
+      'View reports',
+      'Approve leaves',
+      'View payslips',
+      'Mark attendance',
+      'Manage employees',
+      'Generate reports',
+    ];
+
+    for (const roleAndPrevilege of roleAndPrevileges) {
       const settingToUpdate = await this.prisma.userSettings.findFirst({
         where: { role: { equals: roleAndPrevilege.role, mode: 'insensitive' } },
       });
+
       if (!settingToUpdate) {
         throw new Error('setting to update is not available');
       }
-      roleAndPrevilege.permissions.map(async (previelege: string) => {
-        switch (previelege) {
+
+      const updateData: Record<string, boolean> = {};
+
+      for (const permission of allPermissions) {
+        switch (permission) {
           case 'Full access':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { full_access: true },
-            });
+            updateData.full_access =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Approve attendance':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { approve_attendance: true },
-            });
+            updateData.approve_attendance =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Manage payroll':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { manage_payroll: true },
-            });
+            updateData.manage_payroll =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'View reports':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { view_reports: true },
-            });
-
+            updateData.view_reports =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Approve leaves':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { approve_leaves: true },
-            });
-
+            updateData.approve_leaves =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'View payslips':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { view_payslip: true },
-            });
-
+            updateData.view_payslip =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Mark attendance':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { mark_attendance: true },
-            });
-
+            updateData.mark_attendance =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Manage employees':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { manage_employees: true },
-            });
-
+            updateData.manage_employees =
+              roleAndPrevilege.permissions.includes(permission);
             break;
           case 'Generate reports':
-            await this.prisma.userSettings.update({
-              where: { id: settingToUpdate.id },
-              data: { generate_reports: true },
-            });
-
+            updateData.generate_reports =
+              roleAndPrevilege.permissions.includes(permission);
             break;
         }
+      }
+
+      await this.prisma.userSettings.update({
+        where: { id: settingToUpdate.id },
+        data: updateData,
       });
-    });
+    }
   }
+
   async singleUpdatePrevieleges(roleAndPrevilege: RolePrevielegeInt) {
     const settingToUpdate = await this.prisma.userSettings.findFirst({
       where: { role: { equals: roleAndPrevilege.role, mode: 'insensitive' } },
