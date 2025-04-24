@@ -49,7 +49,6 @@ export class TradePositionController {
 
   @Get('trades')
   async getTrades(@Request() req: any) {
-    // console.log('user calculation', req.user.salary_calculation);
     try {
       if (req.user.salary_calculation === 'monthly rate') {
         const trades = await this.tradePositionService.getTrades();

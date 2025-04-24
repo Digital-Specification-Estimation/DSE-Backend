@@ -28,7 +28,7 @@ model User {
   remind_approvals    Boolean?
   business_name       String?  
    salary_calculation String?    @default("daily rate")
-  currency String?               @default("USD")
+  currency String?               @default("USD1")
   payslip_format String?          @default("PDF")
   current_role        String?
   google_id           String?

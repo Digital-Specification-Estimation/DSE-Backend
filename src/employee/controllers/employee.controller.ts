@@ -43,7 +43,10 @@ export class EmployeeController {
   }
   @Get('get/employees')
   async getEmployees(@Request() req: any) {
-    return await this.employeeService.getEmployees(req.user.salary_calculation);
+    return await this.employeeService.getEmployees(
+      req.user.salary_calculation,
+      req.user.currency,
+    );
   }
 
   @Get('get/number')

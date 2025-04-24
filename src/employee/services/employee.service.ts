@@ -169,7 +169,7 @@ export class EmployeeService {
       ...(index === currentMonth ? { highlight: true } : {}),
     }));
   }
-  async getEmployees(salary_calculation: string) {
+  async getEmployees(salary_calculation: string, currency: string) {
     const employees = await this.prisma.employee.findMany({
       include: {
         trade_position: { include: { project: true } },
@@ -177,9 +177,20 @@ export class EmployeeService {
         attendance: true,
       },
     });
+    const splitCurrencyValue = (str: string | undefined | null) => {
+      if (!str) return null; // return early if str is undefined or null
+      const match = str.match(/^([A-Z]+)([\d.]+)$/);
+      if (!match) return null;
+      return {
+        currency: match[1],
+        value: match[2],
+      };
+    };
 
     const employeeWithExtras = await Promise.all(
       employees.map(async (employee) => {
+        let currencyValue = Number(splitCurrencyValue(currency)?.value);
+        let currencyShort = splitCurrencyValue(currency)?.currency;
         const sickDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
           'sick',
@@ -318,8 +329,8 @@ export class EmployeeService {
           totalPlannedBytrade,
           plannedVsActual:
             plannedVsActual < 0
-              ? `Over Budget ${plannedVsActual}`
-              : `Planned ${plannedVsActual}`,
+              ? `Over Budget ${(plannedVsActual * currencyValue).toLocaleString()}`
+              : `Planned ${(plannedVsActual * currencyValue).toLocaleString()}`,
           totalActualPayroll,
         };
       }),
