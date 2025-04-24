@@ -70,6 +70,7 @@ export class ProjectService {
         trade_positions: project.trade_positions.map((position) => ({
           ...position,
           daily_planned_cost: position.daily_planned_cost?.toString(),
+          monthly_planned_cost: position.monthly_planned_cost?.toString(),
         })),
         start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
         end_date: format(new Date(project.end_date), 'dd/MM/yyyy'),
