@@ -29,7 +29,11 @@ export class ProjectController {
     @Body() createProject: CreateProjectDto,
     @Request() req: any,
   ) {
-    return this.projectService.addProject(createProject, req.user.id);
+    return this.projectService.addProject(
+      createProject,
+      req.user.id,
+      req.user.company_id,
+    );
   }
   @Put('edit')
   async updateProject(@Body() updateProject: UpdateProjectDto) {

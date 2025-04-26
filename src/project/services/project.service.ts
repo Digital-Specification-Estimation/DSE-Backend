@@ -11,11 +11,16 @@ export class ProjectService {
     private prisma: PrismaService,
     private notificationGateway: NotificationsGateway,
   ) {}
-  async addProject(createProject: CreateProjectDto, userId: string) {
+  async addProject(
+    createProject: CreateProjectDto,
+    userId: string,
+    company_id: string,
+  ) {
     console.log(createProject);
     const project = await this.prisma.project.create({
       data: {
         ...createProject,
+        company_id,
         start_date: new Date(createProject.start_date),
         end_date: new Date(createProject.end_date),
       },

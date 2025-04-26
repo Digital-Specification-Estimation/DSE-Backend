@@ -17,8 +17,8 @@ import { LocationService } from '../services/location.service';
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
   @Get('locations')
-  async getLocations() {
-    return await this.locationService.getLocations();
+  async getLocations(@Request() req: any) {
+    return await this.locationService.getLocations(req.user.company_id);
   }
   @Get(':id')
   async getLocationById(@Param('id') id: string) {
@@ -29,7 +29,11 @@ export class LocationController {
     @Body() createLocation: CreateLocationDto,
     @Request() req: any,
   ) {
-    return await this.locationService.addLocation(createLocation, req.user.id);
+    return await this.locationService.addLocation(
+      createLocation,
+      req.user.id,
+      req.user.company_id,
+    );
   }
   @Put('edit')
   async editLocation(@Body() updateLocation: UpdateLocationDto) {

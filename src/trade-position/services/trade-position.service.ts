@@ -10,10 +10,14 @@ export class TradePositionService {
     private prisma: PrismaService,
     private notificationGateWay: NotificationsGateway,
   ) {}
-  async addTrade(createTrade: CreateTradePositionDto, userId: string) {
+  async addTrade(
+    createTrade: CreateTradePositionDto,
+    userId: string,
+    company_id: string,
+  ) {
     try {
       const newTrade = await this.prisma.tradePosition.create({
-        data: { ...createTrade },
+        data: { ...createTrade, company_id },
       });
       if (newTrade) {
         await this.notificationGateWay.sendBroadcastNotification(

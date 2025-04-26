@@ -10,8 +10,8 @@ export class LocationService {
     private prisma: PrismaService,
     private notificationGateway: NotificationsGateway,
   ) {}
-  async getLocations() {
-    return this.prisma.location.findMany();
+  async getLocations(company_id: string) {
+    return this.prisma.location.findMany({ where: { company_id } });
   }
   async locationExists(id: string) {
     const location = await this.prisma.location.findUnique({ where: { id } });
@@ -24,9 +24,13 @@ export class LocationService {
       throw new NotFoundException('the location doesnot exist');
     }
   }
-  async addLocation(createLocation: CreateLocationDto, userId: string) {
+  async addLocation(
+    createLocation: CreateLocationDto,
+    userId: string,
+    company_id: string,
+  ) {
     const location = await this.prisma.location.create({
-      data: { ...createLocation },
+      data: { ...createLocation, company_id },
     });
     if (location) {
       await this.notificationGateway.sendBroadcastNotification(

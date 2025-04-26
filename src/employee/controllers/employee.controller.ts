@@ -24,7 +24,11 @@ export class EmployeeController {
     @Body() creatEmployee: CreateEmployeeDto,
     @Request() req: any,
   ) {
-    return await this.employeeService.addEmployee(creatEmployee, req.user.id);
+    return await this.employeeService.addEmployee(
+      creatEmployee,
+      req.user.id,
+      req.user.company_id,
+    );
   }
   @Put('edit')
   async editEmployee(@Body() updateEmployee: UpdateEmployeeDto) {
@@ -85,6 +89,7 @@ export class EmployeeController {
   async getMonthlyStats(@Request() req: any) {
     return await this.employeeService.getMonthlyStatistics(
       req.user.salary_calculation,
+      req.user.company_id,
     );
   }
 }

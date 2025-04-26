@@ -12,9 +12,13 @@ export class EmployeeService {
     private prisma: PrismaService,
     private notificationGateway: NotificationsGateway,
   ) {}
-  async addEmployee(createEmployee: CreateEmployeeDto, userId: string) {
+  async addEmployee(
+    createEmployee: CreateEmployeeDto,
+    userId: string,
+    company_id: string,
+  ) {
     const employee = await this.prisma.employee.create({
-      data: { ...createEmployee },
+      data: { ...createEmployee, company_id },
     });
     if (employee) {
       await this.notificationGateway.sendBroadcastNotification(
@@ -132,8 +136,12 @@ export class EmployeeService {
     'Dec',
   ];
 
-  async getMonthlyStatistics(salary_calculation: string): Promise<any[]> {
+  async getMonthlyStatistics(
+    salary_calculation: string,
+    company_id: string,
+  ): Promise<any[]> {
     const employees = await this.prisma.employee.findMany({
+      where: { company_id },
       include: { trade_position: true },
     });
 

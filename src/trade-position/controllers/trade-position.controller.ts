@@ -22,7 +22,11 @@ export class TradePositionController {
     @Request() req: any,
   ) {
     console.log(req.user);
-    return await this.tradePositionService.addTrade(createTrade, req.user.id);
+    return await this.tradePositionService.addTrade(
+      createTrade,
+      req.user.id,
+      req.user.company_id,
+    );
   }
   @Get('get/:id')
   async getTrade(@Param('id') id: string) {
