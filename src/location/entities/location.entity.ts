@@ -16,4 +16,8 @@ export class LocationEntity implements Location {
   @IsString()
   @ApiProperty()
   location_name: string;
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  company_id: string | null;
 }

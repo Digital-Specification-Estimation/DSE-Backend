@@ -26,11 +26,8 @@ export class CompanyController {
   }
 
   @Post('add')
-  async addCompanies(
-    @Body() createCompanyDto: CreateCompanyDto,
-    @Request() req: any,
-  ) {
-    return await this.companyService.addCompany(createCompanyDto, req.user.id);
+  async addCompanies(@Body() createCompanyDto: CreateCompanyDto) {
+    return await this.companyService.addCompany(createCompanyDto);
   }
   @UseInterceptors(
     FileInterceptor('image', {

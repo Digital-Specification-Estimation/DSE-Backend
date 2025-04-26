@@ -15,17 +15,17 @@ export class CompanyService {
   async getCompanies() {
     return await this.prismaService.company.findMany();
   }
-  async addCompany(createCompanyDto: CreateCompanyDto, userId: string) {
+  async addCompany(createCompanyDto: CreateCompanyDto) {
     try {
       const company = await this.prismaService.company.create({
         data: createCompanyDto,
       });
-      if (company) {
-        await this.notificationGateway.sendBroadcastNotification(
-          userId,
-          `Company called ${company.company_name} is created`,
-        );
-      }
+      // if (company) {
+      //   await this.notificationGateway.sendBroadcastNotification(
+      //     userId,
+      //     `Company called ${company.company_name} is created`,
+      //   );
+      // }
       return company;
     } catch (error) {
       console.log(error);

@@ -15,6 +15,10 @@ export class ProjectEntity implements Project {
   @IsString()
   @IsOptional()
   @ApiProperty()
+  company_id: string | null;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
   location_name: string;
   @IsString()
   @IsOptional()
