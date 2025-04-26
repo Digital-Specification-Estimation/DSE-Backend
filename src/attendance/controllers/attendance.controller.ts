@@ -11,6 +11,7 @@ import {
   BadRequestException,
   ParseIntPipe,
   Query,
+  Request,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AttendanceService } from '../services/attendance.service';
@@ -88,8 +89,10 @@ export class AttendanceController {
     return await this.attendanceService.deleteManyAttendences(idArray);
   }
   @Get('daily-percentage-monthly')
-  getDailyAttendance() {
-    return this.attendanceService.getDailyAttendancePercentage();
+  getDailyAttendance(@Request() req: any) {
+    return this.attendanceService.getDailyAttendancePercentage(
+      req.user.company_id,
+    );
   }
   @Put('edit-status-user')
   async editStatusUser(

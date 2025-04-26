@@ -59,9 +59,10 @@ export class ProjectService {
       throw new NotFoundException('the project doesnot exists');
     }
   }
-  async getProjects() {
+  async getProjects(companyId: string) {
     try {
       const projects = await this.prisma.project.findMany({
+        where: { company_id: companyId },
         include: { trade_positions: { include: { employees: true } } },
       });
 

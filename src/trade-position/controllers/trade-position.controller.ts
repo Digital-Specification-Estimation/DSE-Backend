@@ -51,7 +51,9 @@ export class TradePositionController {
   async getTrades(@Request() req: any) {
     try {
       if (req.user.salary_calculation === 'monthly rate') {
-        const trades = await this.tradePositionService.getTrades();
+        const trades = await this.tradePositionService.getTrades(
+          req.user.company_id,
+        );
 
         const results = await Promise.all(
           trades.map(async (trade: any) => {
@@ -105,7 +107,9 @@ export class TradePositionController {
 
         return results;
       } else {
-        const trades = await this.tradePositionService.getTrades();
+        const trades = await this.tradePositionService.getTrades(
+          req.user.company_id,
+        );
 
         const results = await Promise.all(
           trades.map(async (trade: any) => {

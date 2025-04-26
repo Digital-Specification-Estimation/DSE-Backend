@@ -19,6 +19,10 @@ export class AttendanceEntity implements Attendance {
   @IsString()
   @ApiProperty()
   @IsOptional()
+  company_id: string | null;
+  @IsString()
+  @ApiProperty()
+  @IsOptional()
   reason: string | null;
   @IsDecimal()
   @IsOptional()

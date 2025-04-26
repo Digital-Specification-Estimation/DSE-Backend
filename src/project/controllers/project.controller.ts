@@ -17,8 +17,8 @@ import { UpdateProjectDto } from '../dto/update-project.dto';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
   @Get('projects')
-  async getProjects() {
-    return this.projectService.getProjects();
+  async getProjects(@Request() req: any) {
+    return this.projectService.getProjects(req.user.company_id);
   }
   @Get(':id')
   async getProjectsById(@Param('id') id: string) {

@@ -169,8 +169,13 @@ export class EmployeeService {
       ...(index === currentMonth ? { highlight: true } : {}),
     }));
   }
-  async getEmployees(salary_calculation: string, currency: string) {
+  async getEmployees(
+    salary_calculation: string,
+    currency: string,
+    companyId: string,
+  ) {
     const employees = await this.prisma.employee.findMany({
+      where: { company_id: companyId },
       include: {
         trade_position: { include: { project: true } },
         company: true,

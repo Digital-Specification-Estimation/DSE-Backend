@@ -40,19 +40,22 @@ export class AttendanceService {
     });
     return !!attendance;
   }
-  async getDailyAttendancePercentage() {
+  async getDailyAttendancePercentage(companyId: string) {
     const now = new Date();
     const start = startOfMonth(now);
     const end = endOfMonth(now);
     console.log('start', start);
     console.log('end', end);
     // Get all employees
-    const employees = await this.prisma.employee.findMany();
+    const employees = await this.prisma.employee.findMany({
+      where: { company_id: companyId },
+    });
     const totalEmployees = employees.length;
 
     // Get all attendance records in the current month
     const attendanceRecords = await this.prisma.attendance.findMany({
       where: {
+        company_id: companyId,
         date: {
           gte: start,
           lte: end,

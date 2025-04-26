@@ -83,8 +83,9 @@ export class TradePositionService {
       throw new NotFoundException('the trade not found');
     }
   }
-  async getTrades() {
+  async getTrades(companyId: string) {
     const trades = await this.prisma.tradePosition.findMany({
+      where: { company_id: companyId },
       include: {
         project: true,
         employees: { include: { trade_position: true } },

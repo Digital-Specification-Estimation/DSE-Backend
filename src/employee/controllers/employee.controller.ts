@@ -46,6 +46,7 @@ export class EmployeeController {
     return await this.employeeService.getEmployees(
       req.user.salary_calculation,
       req.user.currency,
+      req.user.company_id,
     );
   }
 
