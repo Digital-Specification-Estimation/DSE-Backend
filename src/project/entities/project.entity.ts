@@ -20,10 +20,7 @@ export class ProjectEntity implements Project {
   @IsOptional()
   @ApiProperty()
   location_name: string;
-  @IsString()
-  @IsOptional()
-  @ApiProperty()
-  currency: string;
+
   @Type(() => Date)
   @IsDate()
   @IsOptional()
