@@ -257,7 +257,7 @@ export class AttendanceService {
         where: {
           id: attendance.id,
         },
-        data: { reason: reasonType.reason },
+        data: { reason: reasonType.reason, status: 'absent' },
       });
     } catch (error) {
       console.log('error', error);

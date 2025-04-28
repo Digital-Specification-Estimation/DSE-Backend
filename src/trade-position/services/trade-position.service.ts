@@ -92,7 +92,7 @@ export class TradePositionService {
       where: { company_id: companyId },
       include: {
         project: true,
-        employees: { include: { trade_position: true } },
+        employees: { include: { trade_position: true, attendance: true } },
       },
     });
 

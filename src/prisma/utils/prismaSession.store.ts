@@ -8,12 +8,12 @@ export class PrismaSessionStore extends Store {
     try {
       const session = await prisma.session.findUnique({ where: { sid } });
       if (!session) {
-        throw new Error('Session not found');
+        return callback(null, null);
       }
-      console.log('session calling');
-      if (session && session.expiresAt > new Date()) {
+      if (session.expiresAt > new Date()) {
         callback(null, JSON.parse(session.data));
       } else {
+        await this.destroy(sid);
         callback(null, null);
       }
     } catch (error) {

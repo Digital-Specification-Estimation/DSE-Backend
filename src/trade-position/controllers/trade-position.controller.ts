@@ -12,6 +12,7 @@ import {
 import { CreateTradePositionDto } from '../dto/create-trade-position.dto';
 import { UpdateTradePositionDto } from '../dto/update-trade-position.dto';
 import { TradePositionService } from '../services/trade-position.service';
+import { AttendanceEntity } from 'src/attendance/entities/attendance.entity';
 
 @Controller('trade-position')
 export class TradePositionController {
@@ -65,9 +66,19 @@ export class TradePositionController {
           trades.map(async (trade: any) => {
             let actual_cost = 0;
             let planned_costs = 0;
+
             // Safely handle employees and calculate cost
             const employeeCosts = await Promise.all(
               trade.employees.map(async (employee: any) => {
+                let daysAbsentNoReason = 0;
+                await employee.attendance.map((attend: AttendanceEntity) => {
+                  if (
+                    (attend.reason === '' || null || undefined) &&
+                    attend.status === 'absent'
+                  ) {
+                    daysAbsentNoReason += 1;
+                  }
+                });
                 const monthlyRate = Number(employee.monthly_rate ?? 0);
 
                 const createdDate = employee.created_date
@@ -75,13 +86,22 @@ export class TradePositionController {
                   : new Date();
 
                 const days = await this.getDaysBetween(createdDate);
-                const cost = monthlyRate * (days / 30);
+                const cost = monthlyRate * ((days - daysAbsentNoReason) / 30);
 
                 return cost;
               }),
             );
             const plannedemployeeCosts = await Promise.all(
               trade.employees.map(async (employee: any) => {
+                let daysAbsentNoReason = 0;
+                await employee.attendance.map((attend: AttendanceEntity) => {
+                  if (
+                    (attend.reason === '' || null || undefined) &&
+                    attend.status === 'absent'
+                  ) {
+                    daysAbsentNoReason += 1;
+                  }
+                });
                 const planned_monthly_rate = Number(
                   employee.trade_position?.monthly_planned_cost,
                 );
@@ -90,7 +110,8 @@ export class TradePositionController {
                   : new Date();
 
                 const days = await this.getDaysBetween(createdDate);
-                const planned_cost = planned_monthly_rate * (days / 30);
+                const planned_cost =
+                  planned_monthly_rate * ((days - daysAbsentNoReason) / 30);
 
                 return planned_cost;
               }),
@@ -124,6 +145,15 @@ export class TradePositionController {
             // Safely handle employees and calculate cost
             const employeeCosts = await Promise.all(
               trade.employees.map(async (employee: any) => {
+                let daysAbsentNoReason = 0;
+                await employee.attendance.map((attend: AttendanceEntity) => {
+                  if (
+                    (attend.reason === '' || null || undefined) &&
+                    attend.status === 'absent'
+                  ) {
+                    daysAbsentNoReason += 1;
+                  }
+                });
                 const dailyRate = Number(employee.daily_rate ?? 0);
 
                 const createdDate = employee.created_date
@@ -131,13 +161,22 @@ export class TradePositionController {
                   : new Date();
 
                 const days = await this.getDaysBetween(createdDate);
-                const cost = dailyRate * days;
+                const cost = dailyRate * (days - daysAbsentNoReason);
 
                 return cost;
               }),
             );
             const plannedemployeeCosts = await Promise.all(
               trade.employees.map(async (employee: any) => {
+                let daysAbsentNoReason = 0;
+                await employee.attendance.map((attend: AttendanceEntity) => {
+                  if (
+                    (attend.reason === '' || null || undefined) &&
+                    attend.status === 'absent'
+                  ) {
+                    daysAbsentNoReason += 1;
+                  }
+                });
                 const planned_daily_rate = Number(
                   employee.trade_position?.daily_planned_cost,
                 );
@@ -146,7 +185,8 @@ export class TradePositionController {
                   : new Date();
 
                 const days = await this.getDaysBetween(createdDate);
-                const planned_cost = planned_daily_rate * days;
+                const planned_cost =
+                  planned_daily_rate * (days - daysAbsentNoReason);
 
                 return planned_cost;
               }),

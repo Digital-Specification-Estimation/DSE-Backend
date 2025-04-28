@@ -5,6 +5,7 @@ import { UsersService } from 'src/users/services/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NotFoundError } from 'rxjs';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
+import { AttendanceEntity } from 'src/attendance/entities/attendance.entity';
 
 @Injectable()
 export class EmployeeService {
@@ -202,6 +203,15 @@ export class EmployeeService {
 
     const employeeWithExtras = await Promise.all(
       employees.map(async (employee) => {
+        let daysAbsentNoReason = 0;
+        await employee.attendance.map((attend: AttendanceEntity) => {
+          if (
+            (attend.reason === '' || null || undefined) &&
+            attend.status === 'absent'
+          ) {
+            daysAbsentNoReason += 1;
+          }
+        });
         let currencyValue = Number(splitCurrencyValue(currency)?.value);
         let currencyShort = splitCurrencyValue(currency)?.currency;
         const sickDays = await this.getAttendanceDaysBasedOnReason(
@@ -227,23 +237,25 @@ export class EmployeeService {
                   ? employee.trade_position.monthly_planned_cost
                   : 0,
               ) *
-                Number(
+                (Number(
                   await this.getDaysBetween(
                     employee.created_date
                       ? new Date(employee.created_date)
                       : new Date(),
                   ),
-                ),
+                ) -
+                  daysAbsentNoReason),
             ) -
             Number(
               Number(employee.monthly_rate ? employee.monthly_rate : 0) *
-                Number(
+                (Number(
                   await this.getDaysBetween(
                     employee.created_date
                       ? new Date(employee.created_date)
                       : new Date(),
                   ),
-                ),
+                ) -
+                  daysAbsentNoReason),
             );
           totalPlannedBytrade = Number(
             Number(
@@ -251,23 +263,25 @@ export class EmployeeService {
                 ? employee.trade_position.monthly_planned_cost
                 : 0,
             ) *
-              Number(
+              (Number(
                 await this.getDaysBetween(
                   employee.created_date
                     ? new Date(employee.created_date)
                     : new Date(),
                 ),
-              ),
+              ) -
+                daysAbsentNoReason),
           );
           totalActualPayroll =
             Number(employee.monthly_rate ? employee.monthly_rate : 0) *
-            Number(
+            (Number(
               await this.getDaysBetween(
                 employee.created_date
                   ? new Date(employee.created_date)
                   : new Date(),
               ),
-            );
+            ) -
+              daysAbsentNoReason);
         } else {
           plannedVsActual =
             Number(
@@ -276,23 +290,25 @@ export class EmployeeService {
                   ? employee.trade_position.daily_planned_cost
                   : 0,
               ) *
-                Number(
+                (Number(
                   await this.getDaysBetween(
                     employee.created_date
                       ? new Date(employee.created_date)
                       : new Date(),
                   ),
-                ),
+                ) -
+                  daysAbsentNoReason),
             ) -
             Number(
               Number(employee.daily_rate ? employee.daily_rate : 0) *
-                Number(
+                (Number(
                   await this.getDaysBetween(
                     employee.created_date
                       ? new Date(employee.created_date)
                       : new Date(),
                   ),
-                ),
+                ) -
+                  daysAbsentNoReason),
             );
           totalPlannedBytrade = Number(
             Number(
@@ -300,23 +316,25 @@ export class EmployeeService {
                 ? employee.trade_position.daily_planned_cost
                 : 0,
             ) *
-              Number(
+              (Number(
                 await this.getDaysBetween(
                   employee.created_date
                     ? new Date(employee.created_date)
                     : new Date(),
                 ),
-              ),
+              ) -
+                daysAbsentNoReason),
           );
           totalActualPayroll =
             Number(employee.daily_rate ? employee.daily_rate : 0) *
-            Number(
+            (Number(
               await this.getDaysBetween(
                 employee.created_date
                   ? new Date(employee.created_date)
                   : new Date(),
               ),
-            );
+            ) -
+              daysAbsentNoReason);
         }
         return {
           ...employee,
@@ -324,13 +342,14 @@ export class EmployeeService {
           daily_rate: employee.daily_rate?.toString(),
           monthly_rate: employee.monthly_rate?.toString(),
 
-          days_worked: Number(
-            await this.getDaysBetween(
-              employee.created_date
-                ? new Date(employee.created_date)
-                : new Date(),
-            ),
-          ),
+          days_worked:
+            Number(
+              await this.getDaysBetween(
+                employee.created_date
+                  ? new Date(employee.created_date)
+                  : new Date(),
+              ),
+            ) - daysAbsentNoReason,
           remaining_days: this.getRemainingDays(
             employee.contract_finish_date
               ? employee.contract_finish_date
