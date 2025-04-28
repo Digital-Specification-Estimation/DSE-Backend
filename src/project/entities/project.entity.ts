@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Project } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { Type } from 'class-transformer';
 import { IsDate, IsOptional, IsString } from 'class-validator';
 
@@ -12,6 +13,9 @@ export class ProjectEntity implements Project {
   @IsOptional()
   @ApiProperty()
   project_name: string;
+  @IsOptional()
+  @ApiProperty()
+  budget: Decimal | null;
   @IsString()
   @IsOptional()
   @ApiProperty()

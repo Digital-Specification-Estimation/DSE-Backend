@@ -73,6 +73,7 @@ export class ProjectService {
 
       return projects.map((project) => ({
         ...project,
+        budget: project.budget?.toString(),
         trade_positions: project.trade_positions.map((position) => ({
           ...position,
           daily_planned_cost: position.daily_planned_cost?.toString(),

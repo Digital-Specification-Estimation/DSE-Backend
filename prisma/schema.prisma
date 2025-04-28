@@ -121,6 +121,7 @@ model Project {
   id String @id @default(uuid())
   project_name String @default("Project")
   location_name String 
+  budget    Decimal?  @db.Decimal(10, 2)  @default(0)
   company_id String?
   trade_positions TradePosition[]
   start_date DateTime 
