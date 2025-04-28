@@ -214,7 +214,7 @@ export class EmployeeService {
         );
         const unpaidDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
-          'unpaid',
+          'unpaid leave',
         );
         let plannedVsActual = 0;
         let totalPlannedBytrade = 0;
