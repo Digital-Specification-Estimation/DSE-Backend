@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ReasonType } from '../interfaces/utility.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { startOfMonth, endOfMonth, getDate } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 @Injectable()
 export class AttendanceService {
@@ -40,6 +41,28 @@ export class AttendanceService {
     });
     return !!attendance;
   }
+
+  async attendanceExistsByDate(date: string, employee_id: string) {
+    try {
+      const parsedDate = new Date(date);
+      console.log('end of the day ', endOfDay(parsedDate));
+      console.log('start of the day', startOfDay(parsedDate));
+      const attendance = await this.prisma.attendance.findFirst({
+        where: {
+          date: {
+            gte: startOfDay(parsedDate),
+            lte: endOfDay(parsedDate),
+          },
+          employee_id,
+        },
+      });
+
+      return attendance;
+    } catch (error) {
+      throw new NotFoundException('attendance date not found');
+    }
+  }
+
   async getDailyAttendancePercentage(companyId: string) {
     const now = new Date();
     const start = startOfMonth(now);
@@ -213,13 +236,33 @@ export class AttendanceService {
     };
   }
   async addingReason(reasonType: ReasonType) {
-    if (await !this.attendanceExists(reasonType.id)) {
+    if (
+      await !this.attendanceExistsByDate(
+        reasonType.date,
+        reasonType.employee_id,
+      )
+    ) {
       throw new NotFoundException('the attendance does exists');
     }
-    return this.prisma.attendance.update({
-      where: { id: reasonType.id, employee_id: reasonType.employee_id },
-      data: { reason: reasonType.reason },
-    });
+    try {
+      const attendance: any = await this.attendanceExistsByDate(
+        reasonType.date,
+        reasonType.employee_id,
+      );
+      if (!attendance.id) {
+        throw new Error('attendance date not found');
+      }
+      console.log('attendance to update ', attendance);
+      return await this.prisma.attendance.update({
+        where: {
+          id: attendance.id,
+        },
+        data: { reason: reasonType.reason },
+      });
+    } catch (error) {
+      console.log('error', error);
+      throw new NotFoundException('attendance date not found');
+    }
   }
   async deleteManyAttendences(ids: string[]) {
     try {

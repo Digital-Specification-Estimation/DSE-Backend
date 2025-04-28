@@ -52,7 +52,7 @@ export class AttendanceController {
   async deleteAttendance(@Param('id') id: string) {
     return this.attendanceService.deleteAttendance(id);
   }
-  @Patch('reason')
+  @Put('reason')
   async addingReason(@Body() reasonType: ReasonType) {
     return this.attendanceService.addingReason(reasonType);
   }
