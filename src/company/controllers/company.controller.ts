@@ -17,6 +17,7 @@ import { UpdateCompanyDto } from '../dto/update-company.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Express } from 'express';
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}

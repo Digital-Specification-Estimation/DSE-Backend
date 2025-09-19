@@ -9,11 +9,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 interface NRequest extends Request {
-  user: any;
+  user?: any;
 }
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
-  constructor(private jwtService: JwtService) {}
+export class AuthMiddleware implements NestMiddleware<NRequest, Response> {
+  constructor(private readonly jwtService: JwtService) {}
 
   async use(req: NRequest, res: Response, next: NextFunction) {
     // Get token from Authorization header (Bearer token)

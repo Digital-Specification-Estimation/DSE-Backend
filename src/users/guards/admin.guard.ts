@@ -6,15 +6,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+
 interface NRequest extends Request {
-  user: any;
+  user?: any;
 }
+
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: NRequest = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<NRequest>();
 
     // Get token from Authorization header (Bearer token)
     const token = request.headers.authorization?.split(' ')[1];
