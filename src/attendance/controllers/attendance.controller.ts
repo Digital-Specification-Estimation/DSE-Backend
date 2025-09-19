@@ -90,6 +90,7 @@ export class AttendanceController {
   }
   @Get('daily-percentage-monthly')
   getDailyAttendance(@Request() req: any) {
+    console.log(req.user)
     return this.attendanceService.getDailyAttendancePercentage(
       req.user.company_id,
     );
