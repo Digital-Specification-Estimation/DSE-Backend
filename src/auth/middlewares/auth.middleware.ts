@@ -10,6 +10,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 interface NRequest extends Request {
   user?: any;
+  headers: {
+    [key: string]: any;
+    authorization?: string;
+  };
 }
 @Injectable()
 export class AuthMiddleware implements NestMiddleware<NRequest, Response> {

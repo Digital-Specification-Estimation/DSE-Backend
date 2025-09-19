@@ -9,6 +9,10 @@ import { Request } from 'express';
 
 interface NRequest extends Request {
   user?: any;
+  headers: {
+    [key: string]: any;
+    authorization?: string;
+  };
 }
 
 @Injectable()

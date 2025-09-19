@@ -4,7 +4,8 @@ import { UpdateCompanyDto } from '../dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CompanyEntity } from '../entities/company.entity';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
-import { use } from 'passport';
+import { Express } from 'express';
+import * as multer from 'multer';
 
 @Injectable()
 export class CompanyService {
