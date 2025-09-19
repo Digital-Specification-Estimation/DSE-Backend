@@ -26,7 +26,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
   });
-
+  app.set("trust proxy", 1);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
