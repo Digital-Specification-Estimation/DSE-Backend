@@ -15,10 +15,15 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
+  const isProduction = process.env.NODE_ENV === 'production';
+  const allowedOrigins = isProduction 
+    ? ['https://digitalestimation.vercel.app', 'https://dse-frontend.vercel.app', 'https://dse-app.vercel.app']
+    : ['http://localhost:3000'];
+
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://digitalestimation.vercel.app','https://dse-frontend.vercel.app','https://dse-app.vercel.app'],
+    origin: allowedOrigins,
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
   });
 
@@ -47,14 +52,16 @@ async function bootstrap() {
   app.use(
     session({
       store: new PrismaSessionStore(),
-      // secret: process.env.SESSION_SECRET_KEY,
-      secret: 'secret',
+      secret: process.env.SESSION_SECRET_KEY || 'fallback-secret-key',
       resave: false,
       saveUninitialized: false,
-      //secure:true -> production
-      cookie: { secure: true, maxAge: 1000 * 60 * 60 * 24, httpOnly: false },
-      //secure:false -> development
-      // cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24, httpOnly: false },
+      cookie: {
+        secure: isProduction,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        httpOnly: true,
+        sameSite: isProduction ? 'none' : 'lax',
+        domain: isProduction ? '.vercel.app' : undefined,
+      },
     }),
   );
 
