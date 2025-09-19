@@ -18,8 +18,8 @@ async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
   console.log("is production ",isProduction )
   const allowedOrigins = isProduction 
-    ? ['https://digitalestimation.vercel.app', 'https://dse-frontend.vercel.app', 'https://dse-app.vercel.app']
-    : ['http://localhost:3000'];
+    ? 'https://dse-app.vercel.app'
+    : 'http://localhost:3000';
 
   app.enableCors({
     origin: allowedOrigins,
@@ -61,7 +61,7 @@ async function bootstrap() {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: true,
         sameSite: isProduction ? 'none' : 'lax',
-        domain: isProduction ? '.vercel.app' : undefined,
+       // domain: isProduction ? '.vercel.app' : undefined,
       },
     }),
   );
