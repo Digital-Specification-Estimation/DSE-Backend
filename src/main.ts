@@ -16,7 +16,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://digitalestimation.vercel.app'],
+    origin: ['http://localhost:3000', 'https://digitalestimation.vercel.app','https://dse-frontend.vercel.app'],
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type,Authorization',
