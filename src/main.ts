@@ -59,7 +59,7 @@ async function bootstrap() {
       cookie: {
         secure: isProduction,
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        httpOnly: true,
+        httpOnly: false,
         sameSite: isProduction ? 'none' : 'lax',
        // domain: isProduction ? '.vercel.app' : undefined,
       },
