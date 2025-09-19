@@ -16,6 +16,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
   const isProduction = process.env.NODE_ENV === 'production';
+  console.log("is production ",isProduction )
   const allowedOrigins = isProduction 
     ? ['https://digitalestimation.vercel.app', 'https://dse-frontend.vercel.app', 'https://dse-app.vercel.app']
     : ['http://localhost:3000'];
