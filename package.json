@@ -8,7 +8,7 @@
   "scripts": {
     "seed": "npx tsx prisma/seed.ts",
     "seed:settings": "npx tsx prisma/settings-seed.ts",
-    "build": "nest build",
+    "build": "npx nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
