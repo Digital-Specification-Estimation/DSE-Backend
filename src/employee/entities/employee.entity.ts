@@ -46,6 +46,12 @@ export class EmployeeEntity implements Employee {
 
   @ApiProperty()
   @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  contract_start_date: Date;
+
+  @ApiProperty()
+  @IsOptional()
   @IsNumber()
   days_projection: number;
 
