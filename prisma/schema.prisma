@@ -91,6 +91,7 @@ model Employee {
   created_date         DateTime  @default(now())
   attendance           Attendance[]
   contract_finish_date DateTime?
+  contract_start_date DateTime?
   days_projection      Int?
   budget_baseline      Decimal?   @default(0)
   company_id           String

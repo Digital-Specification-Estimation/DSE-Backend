@@ -13,14 +13,45 @@ export class EmployeeService {
     private prisma: PrismaService,
     private notificationGateway: NotificationsGateway,
   ) {}
+
+  private calculateBusinessDays(startDate: Date, endDate: Date): number {
+    let count = 0;
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+    
+    while (current <= end) {
+      const dayOfWeek = current.getDay();
+      // 0 = Sunday, 6 = Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  }
+
   async addEmployee(
     createEmployee: CreateEmployeeDto,
     userId: string,
     company_id: string,
   ) {
+    let daysProjection = 0;
+    
+    if (createEmployee.contract_start_date && createEmployee.contract_finish_date) {
+      daysProjection = this.calculateBusinessDays(
+        new Date(createEmployee.contract_start_date),
+        new Date(createEmployee.contract_finish_date)
+      );
+    }
+
     const employee = await this.prisma.employee.create({
-      data: { ...createEmployee, company_id },
+      data: { 
+        ...createEmployee, 
+        company_id,
+        days_projection: daysProjection > 0 ? daysProjection : null
+      },
     });
+
     if (employee) {
       await this.notificationGateway.sendBroadcastNotification(
         userId,
@@ -29,19 +60,49 @@ export class EmployeeService {
     }
     return employee;
   }
+
   async editEmployee(updateEmployee: UpdateEmployeeDto) {
     if (!updateEmployee.id) {
-      throw new NotFoundException('employee id not found');
+      throw new Error('Employee ID is required');
     }
+
+    // If either contract date is being updated, recalculate days projection
+    if (updateEmployee.contract_start_date || updateEmployee.contract_finish_date) {
+      const existingEmployee = await this.prisma.employee.findUnique({
+        where: { id: updateEmployee.id },
+      });
+
+      if (existingEmployee) {
+        const startDate = updateEmployee.contract_start_date 
+          ? new Date(updateEmployee.contract_start_date)
+          : existingEmployee.contract_start_date
+              ? new Date(existingEmployee.contract_start_date)
+              : null;
+              
+        const finishDate = updateEmployee.contract_finish_date 
+          ? new Date(updateEmployee.contract_finish_date)
+          : existingEmployee.contract_finish_date
+              ? new Date(existingEmployee.contract_finish_date)
+              : null;
+
+        if (startDate && finishDate) {
+          updateEmployee.days_projection = this.calculateBusinessDays(startDate, finishDate);
+        } else {
+          updateEmployee.days_projection = 0;
+        }
+      }
+    }
+
     if (await this.employeeExists(updateEmployee.id)) {
       return await this.prisma.employee.update({
         where: { id: updateEmployee.id },
         data: { ...updateEmployee },
       });
     } else {
-      throw new NotFoundException('employee not found');
+      throw new Error('Employee does not exist');
     }
   }
+
   async deleteEmployee(employeeId: string, userId: string) {
     if (await this.employeeExists(employeeId)) {
       const employee = await this.prisma.employee.delete({
