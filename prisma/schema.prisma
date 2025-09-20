@@ -47,12 +47,13 @@ model Company {
   business_type         String
   standard_work_hours   Int
   weekly_work_limit     Int
-  holidays String[]
+  holidays              String[]
   overtime_rate         Decimal
   users                 User[]        @relation("UserCompanies")
   employees             Employee[]
   daily_total_planned_cost Decimal?
   daily_total_actual_cost Decimal?
+  userSettings          UserSettings[] @relation("CompanyUserSettings")
 }
 
 model Attendance {
@@ -138,18 +139,19 @@ model Notification {
   createdAt  DateTime @default(now())
 }
 
-model UserSettings{
-  id String @id @default(uuid())
-  // userId String @unique
-  role   String?  
-  user User[] @relation("userSettings")
-  full_access         Boolean?
-  approve_attendance  Boolean? //done
-  manage_payroll      Boolean?
-  view_reports        Boolean?
-  approve_leaves      Boolean?
-  view_payslip        Boolean? //done
-  mark_attendance     Boolean?   //done
-  manage_employees    Boolean?  //done
-  generate_reports    Boolean? //done
+model UserSettings {
+  id                String   @id @default(uuid())
+  role              String?
+  company_id        String?
+  company           Company? @relation("CompanyUserSettings", fields: [company_id], references: [id], onDelete: Cascade)
+  user              User[]   @relation("userSettings")
+  full_access       Boolean?
+  approve_attendance Boolean? //done
+  manage_payroll    Boolean?
+  view_reports      Boolean?
+  approve_leaves    Boolean?
+  view_payslip      Boolean? //done
+  mark_attendance   Boolean? //done
+  manage_employees  Boolean? //done
+  generate_reports  Boolean? //done
 }

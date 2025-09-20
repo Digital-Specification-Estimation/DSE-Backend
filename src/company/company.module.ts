@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 import { NotificationsService } from 'src/notifications/services/notifications.service';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   controllers: [CompanyController],
@@ -14,6 +15,9 @@ import { NotificationsService } from 'src/notifications/services/notifications.s
     NotificationsGateway,
     NotificationsService,
   ],
-  imports: [NotificationsModule],
+  imports: [
+    NotificationsModule,
+    UsersModule,  
+  ],
 })
 export class CompanyModule {}
