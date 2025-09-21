@@ -19,17 +19,19 @@ import { strict } from 'assert';
 @Controller('employee')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
-  @Post('add')
-  async addEmployee(
-    @Body() creatEmployee: CreateEmployeeDto,
-    @Request() req: any,
-  ) {
-    return await this.employeeService.addEmployee(
-      creatEmployee,
-      req.user.id,
-      req.user.company_id,
-    );
-  }
+@Post('add')
+async addEmployee(
+  @Body() createEmployee: CreateEmployeeDto,
+  @Request() req: any,
+) {
+  // Pass the logged-in user's company
+  return await this.employeeService.addEmployee(
+    createEmployee,
+    req.user.id,
+    req.user.company_id, // <-- use this
+  );
+}
+
   @Put('edit')
   async editEmployee(@Body() updateEmployee: UpdateEmployeeDto) {
     return await this.employeeService.editEmployee(updateEmployee);

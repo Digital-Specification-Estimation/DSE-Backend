@@ -8,65 +8,66 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class EmployeeEntity implements Employee {
-  constructor(partial: Partial<Employee> | null) {
-    if (partial) {
-      Object.assign(this, partial);
-    }
+  constructor(partial: Partial<Employee> | null = null) {
+    if (partial) Object.assign(this, partial);
   }
-  @ApiProperty()
-  @IsString()
+
+  @ApiProperty({ description: 'Employee ID' })
+  @IsUUID()
   @IsOptional()
   id: string;
 
+  @ApiProperty({ description: 'Employee username' })
   @IsString()
-  @ApiProperty()
   username: string;
 
-  @IsOptional()
-  @IsString()
-  @ApiProperty()
+  @ApiProperty({ description: 'Trade Position ID' })
+  @IsUUID()
   trade_position_id: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Daily rate', required: false })
   @IsOptional()
   @IsDecimal()
   daily_rate: Decimal;
-  @ApiProperty()
+
+  @ApiProperty({ description: 'Monthly rate', required: false })
   @IsOptional()
   @IsDecimal()
-  monthly_rate: Decimal | null;
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Date)
-  @IsDate()
-  contract_finish_date: Date;
+  monthly_rate: Decimal;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Contract start date', required: false })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
   contract_start_date: Date;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Contract finish date', required: false })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  contract_finish_date: Date;
+
+  @ApiProperty({ description: 'Projected working days', required: false })
   @IsOptional()
   @IsNumber()
   days_projection: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Budget baseline', required: false })
   @IsOptional()
   @IsDecimal()
   budget_baseline: Decimal;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
+  @ApiProperty({ description: 'Company ID' })
+  @IsUUID()
   company_id: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Creation date', required: false })
   @IsOptional()
+  @Type(() => Date)
   @IsDate()
   created_date: Date;
 }
