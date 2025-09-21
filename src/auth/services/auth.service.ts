@@ -104,7 +104,7 @@ export class AuthService {
           const updatedRoles = [...existingUser.role, role];
 
           const settingToConnect = await this.prisma.userSettings.findFirst({
-            where: { role },
+            where: { role,company_id:company_id },
           });
 
           if (!settingToConnect) {
