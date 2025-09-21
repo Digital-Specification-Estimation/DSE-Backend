@@ -28,18 +28,14 @@ export class CompanyService {
           data: createCompanyDto,
         });
         
-        // Create default user settings for the company
-        await this.userSettingsService.createDefaultSettingsForCompany(newCompany.id);
+        // Create default user settings for the company within the same transaction
+        await this.userSettingsService.createDefaultSettingsForCompany(
+          newCompany.id,
+          prisma  // Pass the transaction client
+        );
         
         return newCompany;
       });
-      
-      // if (company) {
-      //   await this.notificationGateway.sendBroadcastNotification(
-      //     userId,
-      //     `Company called ${company.company_name} is created`,
-      //   );
-      // }
       
       return company;
     } catch (error) {
