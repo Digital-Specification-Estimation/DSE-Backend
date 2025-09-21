@@ -3,6 +3,7 @@ import { UsersService } from './services/users.service';
 import { UserSettingsService } from './services/user-settings.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UsersController } from './controllers/users.controller';
+import { UserSettingsController } from './controllers/user-settings.controller';
 import { UserEntity } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,6 +20,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
     UserSettingsService
   ],
   imports: [PrismaModule, JwtModule],
-  controllers: [UsersController],
+  controllers: [UsersController, UserSettingsController],
 })
 export class UsersModule {}

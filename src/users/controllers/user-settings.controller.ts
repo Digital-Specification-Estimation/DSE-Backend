@@ -10,7 +10,6 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 
 @ApiTags('User Settings')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('user-settings')
 export class UserSettingsController {
   constructor(private readonly userSettingsService: UserSettingsService) {}

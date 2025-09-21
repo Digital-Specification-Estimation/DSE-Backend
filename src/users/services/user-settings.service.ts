@@ -55,12 +55,15 @@ export class UserSettingsService {
     },
   };
 
-  async createDefaultSettingsForCompany(companyId: string): Promise<void> {
+  async createDefaultSettingsForCompany(companyId: string, tx?: any): Promise<void> {
+    // Use the transaction client if provided, otherwise use the default prisma client
+    const prisma = tx || this.prisma;
+    
     // Create settings for each role
     const roles = Object.keys(this.rolePermissions) as Array<keyof typeof this.rolePermissions>;
     
     for (const role of roles) {
-        await this.prisma.userSettings.create({
+        await prisma.userSettings.create({
             data: {
               role,
               company_id: companyId,
