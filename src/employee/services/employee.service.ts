@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { NotFoundError } from 'rxjs';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 import { AttendanceEntity } from 'src/attendance/entities/attendance.entity';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class EmployeeService {
@@ -30,36 +31,39 @@ export class EmployeeService {
     return count;
   }
 
-  async addEmployee(
-    createEmployee: CreateEmployeeDto,
-    userId: string,
-    company_id: string,
-  ) {
-    let daysProjection = 0;
-    
-    if (createEmployee.contract_start_date && createEmployee.contract_finish_date) {
-      daysProjection = this.calculateBusinessDays(
-        new Date(createEmployee.contract_start_date),
-        new Date(createEmployee.contract_finish_date)
-      );
-    }
+async addEmployee(
+  createEmployee: CreateEmployeeDto,
+  userId: string,
+  userCompanyId: string, // <-- company_id comes from the logged-in user
+) {
+  let daysProjection = 0;
 
-    const employee = await this.prisma.employee.create({
-      data: { 
-        ...createEmployee, 
-        company_id,
-        days_projection: daysProjection > 0 ? daysProjection : null
-      },
-    });
-
-    if (employee) {
-      await this.notificationGateway.sendBroadcastNotification(
-        userId,
-        `Employee called ${employee.username} is created`,
-      );
-    }
-    return employee;
+  if (createEmployee.contract_start_date && createEmployee.contract_finish_date) {
+    daysProjection = this.calculateBusinessDays(
+      new Date(createEmployee.contract_start_date),
+      new Date(createEmployee.contract_finish_date)
+    );
   }
+
+  const employee = await this.prisma.employee.create({
+    data: {
+      ...createEmployee,
+      company_id: userCompanyId, // <-- always use logged-in user's company
+      days_projection: daysProjection > 0 ? daysProjection : null
+    },
+  });
+
+  if (employee) {
+    await this.notificationGateway.sendBroadcastNotification(
+      userId,
+      `Employee called ${employee.username} is created`,
+    );
+  }
+
+  return employee;
+}
+
+
 
   async editEmployee(updateEmployee: UpdateEmployeeDto) {
     if (!updateEmployee.id) {
