@@ -47,14 +47,16 @@ async addEmployee(
     const idArray = ids.split(',');
     return await this.employeeService.deleteManyEmployees(idArray);
   }
-  @Get('get/employees')
-  async getEmployees(@Request() req: any) {
-    return await this.employeeService.getEmployees(
-      req.user.salary_calculation,
-      req.user.currency,
-      req.user.company_id,
-    );
-  }
+@Get('get/employees')
+async getEmployees(@Request() req: any) {
+  const { salary_calculation = null, currency = null, company_id } = req.user || {};
+  return await this.employeeService.getEmployees(
+    salary_calculation,
+    currency,
+    company_id,
+  );
+}
+
 
   @Get('get/number')
   async getEmployeeNumber() {
