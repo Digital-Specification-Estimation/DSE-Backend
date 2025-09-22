@@ -20,6 +20,7 @@ export class UserSettingsService {
       manage_employees: true,
       generate_reports: true,
     },
+      
     hr_manager: {
       full_access: false,
       approve_attendance: true,
