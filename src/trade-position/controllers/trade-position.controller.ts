@@ -81,11 +81,9 @@ export class TradePositionController {
                 });
                 const monthlyRate = Number(employee.monthly_rate ?? 0);
 
-                const createdDate = employee.created_date
-                  ? new Date(employee.created_date)
-                  : new Date();
-
-                const days = await this.getDaysBetween(createdDate);
+                const days = await this.getDaysBetween(
+                  new Date(employee.contract_start_date),
+                );
                 const cost = monthlyRate * ((days - daysAbsentNoReason) / 30);
 
                 return cost;
@@ -105,9 +103,6 @@ export class TradePositionController {
                 const planned_monthly_rate = Number(
                   employee.trade_position?.monthly_planned_cost,
                 );
-                const createdDate = employee.created_date
-                  ? new Date(employee.created_date)
-                  : new Date();
                 const contract_start_date = employee.contract_start_date
                   ? new Date(employee.contract_start_date)
                   : new Date();
@@ -159,11 +154,11 @@ export class TradePositionController {
                 });
                 const dailyRate = Number(employee.daily_rate ?? 0);
 
-                const createdDate = employee.created_date
-                  ? new Date(employee.created_date)
+                const contract_start_date = employee.contract_start_date
+                  ? new Date(employee.contract_start_date)
                   : new Date();
 
-                const days = await this.getDaysBetween(createdDate);
+                const days = await this.getDaysBetween(contract_start_date);
                 const cost = dailyRate * (days - daysAbsentNoReason);
 
                 return cost;
@@ -183,11 +178,11 @@ export class TradePositionController {
                 const planned_daily_rate = Number(
                   employee.trade_position?.daily_planned_cost,
                 );
-                const createdDate = employee.created_date
-                  ? new Date(employee.created_date)
+                const contract_start_date = employee.contract_start_date
+                  ? new Date(employee.contract_start_date)
                   : new Date();
 
-                const days = await this.getDaysBetween(createdDate);
+                const days = await this.getDaysBetween(contract_start_date);
                 const planned_cost =
                   planned_daily_rate * (days - daysAbsentNoReason);
 
