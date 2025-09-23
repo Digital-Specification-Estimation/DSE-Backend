@@ -218,7 +218,7 @@ async addEmployee(
     }
 
     employees.forEach((employee) => {
-      const date = new Date(employee.created_date);
+      const date = new Date(employee.contract_start_date ? employee.contract_start_date : new Date());
       const monthIndex = date.getMonth();
       const monthName = this.months[monthIndex];
       if (salary_calculation === 'monthly rate') {
@@ -304,8 +304,8 @@ async addEmployee(
               ) *
                 (Number(
                   await this.getDaysBetween(
-                    employee.created_date
-                      ? new Date(employee.created_date)
+                    employee.contract_start_date
+                      ? new Date(employee.contract_start_date)
                       : new Date(),
                   ),
                 ) -
@@ -315,8 +315,8 @@ async addEmployee(
               Number(employee.monthly_rate ? employee.monthly_rate : 0) *
                 (Number(
                   await this.getDaysBetween(
-                    employee.created_date
-                      ? new Date(employee.created_date)
+                    employee.contract_start_date
+                      ? new Date(employee.contract_start_date)
                       : new Date(),
                   ),
                 ) -
@@ -330,8 +330,8 @@ async addEmployee(
             ) *
               (Number(
                 await this.getDaysBetween(
-                  employee.created_date
-                    ? new Date(employee.created_date)
+                  employee.contract_start_date
+                    ? new Date(employee.contract_start_date)
                     : new Date(),
                 ),
               ) -
@@ -341,8 +341,8 @@ async addEmployee(
             Number(employee.monthly_rate ? employee.monthly_rate : 0) *
             (Number(
               await this.getDaysBetween(
-                employee.created_date
-                  ? new Date(employee.created_date)
+                employee.contract_start_date
+                  ? new Date(employee.contract_start_date)
                   : new Date(),
               ),
             ) -
@@ -357,8 +357,8 @@ async addEmployee(
               ) *
                 (Number(
                   await this.getDaysBetween(
-                    employee.created_date
-                      ? new Date(employee.created_date)
+                    employee.contract_start_date
+                      ? new Date(employee.contract_start_date)
                       : new Date(),
                   ),
                 ) -
@@ -368,8 +368,8 @@ async addEmployee(
               Number(employee.daily_rate ? employee.daily_rate : 0) *
                 (Number(
                   await this.getDaysBetween(
-                    employee.created_date
-                      ? new Date(employee.created_date)
+                    employee.contract_start_date
+                      ? new Date(employee.contract_start_date)
                       : new Date(),
                   ),
                 ) -
@@ -383,8 +383,8 @@ async addEmployee(
             ) *
               (Number(
                 await this.getDaysBetween(
-                  employee.created_date
-                    ? new Date(employee.created_date)
+                  employee.contract_start_date
+                    ? new Date(employee.contract_start_date)
                     : new Date(),
                 ),
               ) -
@@ -394,8 +394,8 @@ async addEmployee(
             Number(employee.daily_rate ? employee.daily_rate : 0) *
             (Number(
               await this.getDaysBetween(
-                employee.created_date
-                  ? new Date(employee.created_date)
+                employee.contract_start_date
+                  ? new Date(employee.contract_start_date)
                   : new Date(),
               ),
             ) -
@@ -410,8 +410,8 @@ async addEmployee(
           days_worked:
             Number(
               await this.getDaysBetween(
-                employee.created_date
-                  ? new Date(employee.created_date)
+                employee.contract_start_date
+                  ? new Date(employee.contract_start_date)
                   : new Date(),
               ),
             ) - daysAbsentNoReason,
@@ -467,7 +467,7 @@ async addEmployee(
 
     const filteredEmployees = await this.prisma.employee.findMany({
       where: {
-        created_date: {
+        contract_start_date: {
           gte: startDate,
           lt: endDate,
         },
@@ -505,14 +505,14 @@ async addEmployee(
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
     const filteredEmployees = await this.prisma.employee.findMany({
-      where: { created_date: startDate },
+      where: { contract_start_date: startDate },
       include: { trade_position: true },
     });
     let totalPLannedPayrollOfEMployees = 0;
     let totalPayrollOfEmployees = 0;
     for (const employee of filteredEmployees) {
       const daysFromCreation = await this.getDaysBetween(
-        new Date(employee.created_date),
+        new Date(employee.contract_start_date ? employee.contract_start_date : new Date()),
       );
       const totalEmployeePayrollToNow =
         Number(employee.daily_rate) * daysFromCreation;
@@ -546,7 +546,7 @@ async addEmployee(
       if (!employee) {
         throw new NotFoundException('employee not found');
       }
-      return await this.getDaysBetween(employee.created_date);
+      return await this.getDaysBetween(employee.contract_start_date ? employee.contract_start_date : new Date());
     } catch (error) {
       console.log(error);
     }
@@ -560,7 +560,7 @@ async addEmployee(
       if (!employee) {
         throw new NotFoundException('employee not found');
       }
-      const daysToCreation = await this.getDaysBetween(employee.created_date);
+      const daysToCreation = await this.getDaysBetween(employee.contract_start_date ? employee.contract_start_date : new Date());
       const totalActual = daysToCreation * Number(employee.daily_rate);
       const totalPlanned =
         daysToCreation * Number(employee.trade_position.daily_planned_cost);
