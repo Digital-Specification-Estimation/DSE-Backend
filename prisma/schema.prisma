@@ -14,6 +14,12 @@ datasource db {
 }
 // Prisma schema
 
+enum RoleRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id                   String     @id @default(uuid())
   username             String?
@@ -27,17 +33,18 @@ model User {
   deadline_notify     Boolean?
   remind_approvals    Boolean?
   business_name       String?  
-   salary_calculation String?    @default("daily rate")
-  currency String?               @default("RWF")
-  payslip_format String?          @default("PDF")
-  current_role        String?
-  google_id           String?
-  apple_id            String?
-  notifications       Notification[]
-  image_url           String?
-  settings            UserSettings[]  @relation("userSettings")
-  companies           Company[]    @relation("UserCompanies")
-  logs                Log[]
+  salary_calculation  String?    @default("daily rate")
+  currency           String?    @default("RWF")
+  payslip_format     String?    @default("PDF")
+  current_role       String?
+  google_id          String?
+  apple_id           String?
+  notifications      Notification[]
+  image_url          String?
+  settings           UserSettings[]  @relation("userSettings")
+  companies          Company[]    @relation("UserCompanies")
+  logs               Log[]
+  role_request_approval RoleRequestStatus? @default(PENDING)
 }
 
 model Company {

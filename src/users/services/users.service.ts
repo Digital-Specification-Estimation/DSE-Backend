@@ -3,6 +3,9 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { RoleRequestStatus } from '@prisma/client';
+import { UpdateRoleRequestDto } from '../dto/role-request.dto';
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -234,6 +237,33 @@ export class UsersService {
         role,
         permissions: truePermissions,
       };
+    });
+  }
+
+  async updateRoleRequest(userId: string, updateDto: UpdateRoleRequestDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updateData: any = {
+      role_request_approval: updateDto.status,
+    };
+
+    // If approved and a role is provided, update the user's role
+    if (updateDto.status === RoleRequestStatus.APPROVED && updateDto.role) {
+      updateData.role = {
+        set: [updateDto.role],
+      };
+      updateData.current_role = updateDto.role;
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
     });
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { RoleRequestStatus, User } from '@prisma/client';
 import {
   IsBoolean,
   IsEmail,
@@ -84,4 +84,7 @@ export class CreateUserDto implements User {
   @IsString()
   @IsOptional()
   payslip_format: string | null;
+  @ApiProperty()
+  @IsOptional()
+  role_request_approval: RoleRequestStatus | null;
 }

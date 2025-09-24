@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from 'src/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, User, RoleRequestStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
@@ -51,7 +51,7 @@ export class AuthService {
     }
     if (user && isMatch) {
       await this.prisma.user.update({
-        where: { id: user.id },
+        where: { id: user.id ,role_request_approval:RoleRequestStatus.APPROVED},
         data: { current_role: role },
       });
       const { password, ...result } = user;
@@ -145,6 +145,7 @@ export class AuthService {
         data: {
           ...createUserDto,
           password: hashedPassword,
+          role_request_approval: RoleRequestStatus.PENDING,
           role: Array.isArray(role) ? role : [role],
           companies: { connect: { id: company_id } },
           settings: {
