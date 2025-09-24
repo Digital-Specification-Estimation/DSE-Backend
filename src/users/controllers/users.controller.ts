@@ -12,15 +12,18 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from '../entities/user.entity';
 import { multerConfig } from 'src/config/multer.config';
 import { Express } from 'express';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateRoleRequestDto } from '../dto/role-request.dto';
+import { RoleRequestStatus } from '@prisma/client';
 
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
   @ApiOkResponse({ type: CreateUserDto, isArray: true })
@@ -65,5 +68,24 @@ export class UsersController {
   @Get('get-previeleges')
   async getPrevieleges() {
     return this.userService.getPrevieleges();
+  }
+
+  @Patch('role-request/:userId')
+  @ApiOkResponse({ description: 'Role request updated successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateRoleRequest(
+    @Param('userId') userId: string,
+    @Body() updateDto: UpdateRoleRequestDto,
+  ) {
+    return this.userService.updateRoleRequest(userId, updateDto);
+  }
+
+  @Get('pending-requests')
+  @ApiOkResponse({ type: [UserEntity] })
+  async getPendingRoleRequests() {
+    const users = await this.userService.findAll();
+    return users
+      .filter(user => user.role_request_approval === 'PENDING')
+      .map(user => new UserEntity(user));
   }
 }

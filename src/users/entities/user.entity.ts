@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { User, RoleRequestStatus } from '@prisma/client';
 import { Exclude } from 'class-transformer';
 
 export class UserEntity implements User {
@@ -57,4 +57,6 @@ export class UserEntity implements User {
   deadline_notify: boolean | null;
   @ApiProperty({ required: false, type: () => [String] })
   logs: string[];
+  @ApiProperty({ required: false, enum: ['PENDING', 'APPROVED', 'REJECTED'] })
+  role_request_approval: RoleRequestStatus | null;
 }
