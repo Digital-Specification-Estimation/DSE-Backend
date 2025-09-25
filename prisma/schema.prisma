@@ -53,6 +53,7 @@ model Company {
   company_name          String
   business_type         String
   standard_work_hours   Int
+  base_currency         String?         @default("RWF")
   weekly_work_limit     Int
   holidays              String[]
   overtime_rate         Decimal
