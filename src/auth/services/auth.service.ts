@@ -38,7 +38,8 @@ export class AuthService {
     password: string,
     role: string,
   ): Promise<any> {
-    const user = await this.userService.findOne(email, role);
+  
+    const user = await this.userService.findOne(email, role,);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -49,14 +50,17 @@ export class AuthService {
         user?.password,
       );
     }
+    console.log("user approval",user.role_request_approval , "user id",user.id,"password ", isMatch)
     if (user && isMatch) {
       await this.prisma.user.update({
-        where: { id: user.id ,role_request_approval:RoleRequestStatus.APPROVED},
+        where: { id: user.id},
         data: { current_role: role },
       });
       const { password, ...result } = user;
+console.log("result ",result)
       return result;
     }
+
     return null;
   }
   async login(user: any) {

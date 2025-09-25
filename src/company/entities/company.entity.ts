@@ -56,4 +56,8 @@ export class CompanyEntity implements Company {
   @IsDecimal()
   @IsOptional()
   daily_total_planned_cost: Decimal | null;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  base_currency: string | null;
 }

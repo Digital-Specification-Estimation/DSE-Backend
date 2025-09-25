@@ -65,6 +65,7 @@ export class CompanyService {
         },
       });
     } else {
+      console.log("base currency",updateCompanyDto.base_currency);
       return await this.prismaService.company.update({
         where: { id: updateCompanyDto.id },
         data: {
