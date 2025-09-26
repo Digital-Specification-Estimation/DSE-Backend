@@ -47,6 +47,7 @@ export class UsersService {
     return !!user;
   }
   async updateProfile(updateUserDto: UpdateUserDto, id: string) {
+    console.log("user update",updateUserDto)
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
       const update = await this.prisma.user.update({

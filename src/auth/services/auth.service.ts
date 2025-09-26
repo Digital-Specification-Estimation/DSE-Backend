@@ -144,21 +144,38 @@ console.log("result ",result)
           'User setting not found for the role.',
         );
       }
-
-      const newUser = await this.prisma.user.create({
-        data: {
-          ...createUserDto,
-          password: hashedPassword,
-          role_request_approval: RoleRequestStatus.PENDING,
-          role: Array.isArray(role) ? role : [role],
-          companies: { connect: { id: company_id } },
-          settings: {
-            connect: { id: userSetting.id },
+      let newUser;
+      if (role === 'admin') {
+        newUser = await this.prisma.user.create({
+          data: {
+            ...createUserDto,
+            password: hashedPassword,
+            role_request_approval: RoleRequestStatus.APPROVED,
+            role: Array.isArray(role) ? role : [role],
+            companies: { connect: { id: company_id } },
+            settings: {
+              connect: { id: userSetting.id },
+            },
           },
-        },
-        include: { settings: true },
-      });
-
+          include: { settings: true },
+        });
+      }
+      else {
+      
+        newUser = await this.prisma.user.create({
+          data: {
+            ...createUserDto,
+            password: hashedPassword,
+            role_request_approval: RoleRequestStatus.PENDING,
+            role: Array.isArray(role) ? role : [role],
+            companies: { connect: { id: company_id } },
+            settings: {
+              connect: { id: userSetting.id },
+            },
+          },
+          include: { settings: true },
+        });
+      }
       return newUser;
     } catch (error) {
       if (
