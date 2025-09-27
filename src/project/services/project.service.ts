@@ -95,4 +95,15 @@ export class ProjectService {
       throw new NotFoundException('the project doesnot exists');
     }
   }
+
+  async updateProjectBudget(projectId: string, budget: string) {
+    if (!(await this.projectExists(projectId))) {
+      throw new NotFoundException('Project not found');
+    }
+
+    return this.prisma.project.update({
+      where: { id: projectId },
+      data: { budget },
+    });
+  }
 }

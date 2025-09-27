@@ -12,6 +12,7 @@ import {
 import { ProjectService } from '../services/project.service';
 import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProjectDto } from '../dto/update-project.dto';
+import { UpdateProjectBudgetDto } from '../dto/update-budget.dto';
 
 @Controller('project')
 export class ProjectController {
@@ -42,5 +43,13 @@ export class ProjectController {
   @Delete('delete/:id')
   async deleteProject(@Param('id') id: string, @Request() req: any) {
     return this.projectService.deleteProject(id, req.user.id);
+  }
+  @Patch('budget')
+  async updateProjectBudget(@Body() updateBudgetDto: UpdateProjectBudgetDto) {
+    console.log("updateBudgetDto",updateBudgetDto);
+    return this.projectService.updateProjectBudget(
+      updateBudgetDto.projectId,
+      updateBudgetDto.budget,
+    );
   }
 }
