@@ -76,7 +76,8 @@ export class ProjectService {
         budget: project.budget?.toString(),
         trade_positions: project.trade_positions.map((position) => ({
           ...position,
-          daily_planned_cost: position.daily_planned_cost?.toString(),
+          planned_salary: position.planned_salary?.toString(),
+          daily_planned_cost:  position.daily_planned_cost?.toString(),
           monthly_planned_cost: position.monthly_planned_cost?.toString(),
         })),
         start_date: format(new Date(project.start_date), 'dd/MM/yyyy'),
