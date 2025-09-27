@@ -119,6 +119,7 @@ export class TradePositionController {
               (sum, val) => sum + val,
               0,
             );
+            trade.planned_salary = trade.planned_salary.toString();
             return {
               ...trade,
               actual_cost,
