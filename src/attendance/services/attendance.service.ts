@@ -365,4 +365,27 @@ export class AttendanceService {
       });
     }
   }
+  async getUserAttendanceHistory(
+    employeeId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    const where: any = {
+      employee_id: employeeId,
+    };
+
+    if (startDate && endDate) {
+      where.date = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    return this.prisma.attendance.findMany({
+      where,
+      orderBy: {
+        date: 'desc',
+      },
+    });
+  }
 }

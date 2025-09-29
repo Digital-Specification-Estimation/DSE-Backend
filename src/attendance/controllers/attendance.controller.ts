@@ -116,4 +116,27 @@ export class AttendanceController {
     console.log('update', update);
     return update;
   }
+  @Get('history/:employeeId')
+  async getUserAttendanceHistory(
+    @Param('employeeId') employeeId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    try {
+      const start = startDate ? new Date(startDate) : undefined;
+      const end = endDate ? new Date(endDate) : undefined;
+      
+      if ((start && isNaN(start.getTime())) || (end && isNaN(end.getTime()))) {
+        throw new BadRequestException('Invalid date format. Please use ISO 8601 format (e.g., 2025-01-01)');
+      }
+
+      return await this.attendanceService.getUserAttendanceHistory(
+        employeeId,
+        start,
+        end,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to fetch attendance history');
+    }
+  }
 }
