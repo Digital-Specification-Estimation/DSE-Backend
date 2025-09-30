@@ -108,7 +108,7 @@ console.log("result ",result)
           const updatedRoles = [...existingUser.role, role];
 
           const settingToConnect = await this.prisma.userSettings.findFirst({
-            where: { role,company_id:company_id },
+            where: { company_id:company_id, role:role },
           });
 
           if (!settingToConnect) {
@@ -134,14 +134,14 @@ console.log("result ",result)
 
       // If user doesn't exist or password didn't match, hash password
       const hashedPassword = await this.passwordService.hashPassword(password);
-
+console.log("company id",company_id)
       const userSetting = await this.prisma.userSettings.findFirst({
-        where: { role },
+        where: { company_id:company_id, role:role },
       });
 
       if (!userSetting) {
         throw new InternalServerErrorException(
-          'User setting not found for the role.',
+          'User setting not found for the company.',
         );
       }
       let newUser;
