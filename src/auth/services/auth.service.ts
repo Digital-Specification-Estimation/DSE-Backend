@@ -38,7 +38,7 @@ export class AuthService {
     password: string,
     role: string,
   ): Promise<any> {
-  
+    console.log("email",email,"password",password,"role",role)
     const user = await this.userService.findOne(email, role,);
     if (!user) {
       throw new UnauthorizedException();
