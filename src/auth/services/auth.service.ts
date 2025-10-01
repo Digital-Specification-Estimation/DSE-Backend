@@ -14,7 +14,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { PasswordService } from './password.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { connect } from 'http2';
+
 interface UserInt {
   provider: string;
   providerId: string;
@@ -33,13 +33,12 @@ export class AuthService {
     private prisma: PrismaService,
     private passwordService: PasswordService,
   ) {}
-  async validateUser(
-    email: string,
-    password: string,
-    role: string,
-  ): Promise<any> {
-  
-    const user = await this.userService.findOne(email, role,);
+
+  async validateUser(email: string, password: string, role: any): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: { email },
+      include: { companies: true, settings: true },
+    });
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -50,24 +49,23 @@ export class AuthService {
         user?.password,
       );
     }
-    console.log("user approval",user.role_request_approval , "user id",user.id,"password ", isMatch)
+    console.log("user approval", user.role_request_approval, "user id", user.id, "password ", isMatch);
     if (user && isMatch) {
       await this.prisma.user.update({
-        where: { id: user.id},
-        data: { current_role: role },
+        where: { id: user.id },
+        data: { current_role: Array.isArray(user.role) ? user.role[0]?.replace(/^{|}$/g, "") : user.role },
       });
       const { password, ...result } = user;
-console.log("result ",result)
+      console.log("result ", result);
       return result;
     }
-
     return null;
   }
+
   async login(user: any) {
     const payload = { email: user.email, sub: user.id };
     return {
       user,
-
       // access_token: this.jwtService.sign(payload),
     };
   }
@@ -104,11 +102,10 @@ console.log("result ",result)
             throw new ConflictException('User already exists with this role.');
           }
 
-          // Add new role to existing user
           const updatedRoles = [...existingUser.role, role];
 
           const settingToConnect = await this.prisma.userSettings.findFirst({
-            where: { role,company_id:company_id },
+            where: { role, company_id },
           });
 
           if (!settingToConnect) {
@@ -132,7 +129,6 @@ console.log("result ",result)
         }
       }
 
-      // If user doesn't exist or password didn't match, hash password
       const hashedPassword = await this.passwordService.hashPassword(password);
 
       const userSetting = await this.prisma.userSettings.findFirst({
@@ -159,9 +155,7 @@ console.log("result ",result)
           },
           include: { settings: true },
         });
-      }
-      else {
-      
+      } else {
         newUser = await this.prisma.user.create({
           data: {
             ...createUserDto,
@@ -208,8 +202,6 @@ console.log("result ",result)
         google_id: profile.providerId,
       };
       user = await this.userService.createUser(newUser);
-      return user;
-      // }
     }
     if (user) {
       const payload = { userId: user.id, email: user.email };

@@ -10,21 +10,24 @@ import { UpdateRoleRequestDto } from '../dto/role-request.dto';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(email: string, role: string): Promise<User | null> {
+  async findOne(email: string): Promise<User | null> {
     return this.prisma.user.findFirst({
-      where: { email, role: { hasSome: [role] },role_request_approval:RoleRequestStatus.APPROVED },
+      where: { email },
       include: { companies: true, settings: true },
     });
   }
+
   async findAll() {
     return this.prisma.user.findMany();
   }
+
   async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
       include: { companies: true, settings: true },
     });
   }
+
   async findByGoogleId(googleId: string): Promise<User | null> {
     if (googleId == null) {
       return null;
@@ -37,17 +40,18 @@ export class UsersService {
   }
 
   async createUser(userData: Partial<User>): Promise<User> {
-    const user = this.prisma.user.create({
+    return this.prisma.user.create({
       data: { ...userData },
     });
-    return user;
   }
+
   async userExists(id: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({ where: { id } });
     return !!user;
   }
+
   async updateProfile(updateUserDto: UpdateUserDto, id: string) {
-    console.log("user update",updateUserDto)
+    console.log("user update", updateUserDto);
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
       const update = await this.prisma.user.update({
@@ -60,6 +64,7 @@ export class UsersService {
       return { message: 'user not found' };
     }
   }
+
   async updateProfilePicture(imagePath: string | null, id: string) {
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
@@ -71,6 +76,7 @@ export class UsersService {
       return { message: 'user not found' };
     }
   }
+
   async deleteUser(id: string) {
     const userToDelete = await this.findById(id);
     if (userToDelete) {
@@ -79,6 +85,7 @@ export class UsersService {
       throw new NotFoundException('user not found');
     }
   }
+
   async updatePrevieleges(roleAndPrevileges: RolePrevielegeInt[]) {
     const allPermissions = [
       'Full access',
@@ -183,47 +190,42 @@ export class UsersService {
             where: { id: settingToUpdate.id },
             data: { view_reports: true },
           });
-
           break;
         case 'Approve leaves':
           await this.prisma.userSettings.update({
             where: { id: settingToUpdate.id },
             data: { approve_leaves: true },
           });
-
           break;
         case 'View payslips':
           await this.prisma.userSettings.update({
             where: { id: settingToUpdate.id },
             data: { view_payslip: true },
           });
-
           break;
         case 'Mark attendance':
           await this.prisma.userSettings.update({
             where: { id: settingToUpdate.id },
             data: { mark_attendance: true },
           });
-
           break;
         case 'Manage employees':
           await this.prisma.userSettings.update({
             where: { id: settingToUpdate.id },
             data: { manage_employees: true },
           });
-
           break;
         case 'Generate reports':
           await this.prisma.userSettings.update({
             where: { id: settingToUpdate.id },
             data: { generate_reports: true },
           });
-
           break;
       }
     });
     return 'updating previeleges completed';
   }
+
   async getPrevieleges() {
     const settings = await this.prisma.userSettings.findMany();
 
@@ -254,7 +256,6 @@ export class UsersService {
       role_request_approval: updateDto.status,
     };
 
-    // If approved and a role is provided, update the user's role
     if (updateDto.status === RoleRequestStatus.APPROVED && updateDto.role) {
       updateData.role = {
         set: [updateDto.role],
