@@ -28,6 +28,7 @@ export class CompanyController {
 
   @Post('add')
   async addCompanies(@Body() createCompanyDto: CreateCompanyDto) {
+    console.log("createCompanyDto",createCompanyDto)
     return await this.companyService.addCompany(createCompanyDto);
   }
   @UseInterceptors(
