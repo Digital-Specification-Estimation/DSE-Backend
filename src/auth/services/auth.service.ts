@@ -33,13 +33,11 @@ export class AuthService {
     private prisma: PrismaService,
     private passwordService: PasswordService,
   ) {}
-  async validateUser(
-    email: string,
-    password: string,
-    role: string,
-  ): Promise<any> {
-    console.log("email",email,"password",password,"role",role)
-    const user = await this.userService.findOne(email, role,);
+  async validateUser(email: string, password: string, role: any): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: { email },
+      include: { companies: true, settings: true },
+    });
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -50,17 +48,16 @@ export class AuthService {
         user?.password,
       );
     }
-    console.log("user approval",user.role_request_approval , "user id",user.id,"password ", isMatch)
+    console.log("user approval", user.role_request_approval, "user id", user.id, "password ", isMatch);
     if (user && isMatch) {
       await this.prisma.user.update({
-        where: { id: user.id},
-        data: { current_role: role },
+        where: { id: user.id },
+        data: { current_role: Array.isArray(user.role) ? user.role[0]?.replace(/^{|}$/g, "") : user.role },
       });
       const { password, ...result } = user;
-console.log("result ",result)
+      console.log("result ", result);
       return result;
     }
-
     return null;
   }
   async login(user: any) {
@@ -88,49 +85,52 @@ console.log("result ",result)
       const existingUser = await this.prisma.user.findFirst({
         where: { email },
         include: { settings: true },
-      });
-
-      if (existingUser) {
-        const passwordMatches = await this.passwordService.comparePasswords(
-          password,
-          existingUser.password || '',
-        );
-
-        if (passwordMatches) {
-          const hasRole =
-            Array.isArray(existingUser.role) &&
-            existingUser.role.includes(role);
-          if (hasRole) {
-            throw new ConflictException('User already exists with this role.');
-          }
-
-          // Add new role to existing user
-          const updatedRoles = [...existingUser.role, role];
-
-          const settingToConnect = await this.prisma.userSettings.findFirst({
-            where: { company_id:company_id, role:role },
-          });
-
-          if (!settingToConnect) {
-            throw new InternalServerErrorException(
-              'User setting not found for the role.',
-            );
-          }
-
-          const updatedUser = await this.prisma.user.update({
-            where: { email },
-            data: {
-              role: updatedRoles,
-              settings: {
-                connect: { id: settingToConnect.id },
-              },
-            },
-            include: { settings: true },
-          });
-
-          return updatedUser;
-        }
+      });     
+      if(existingUser){
+        throw new UnauthorizedException("Email is already registered.");
       }
+
+      // if (existingUser) {
+      //   const passwordMatches = await this.passwordService.comparePasswords(
+      //     password,
+      //     existingUser.password || '',
+      //   );
+
+      //   if (passwordMatches) {
+      //     const hasRole =
+      //       Array.isArray(existingUser.role) &&
+      //       existingUser.role.includes(role);
+      //     if (hasRole) {
+      //       throw new ConflictException('User already exists with this role.');
+      //     }
+
+      //     // Add new role to existing user
+      //     // const updatedRoles = [...existingUser.role, role];
+
+      //     const settingToConnect = await this.prisma.userSettings.findFirst({
+      //       where: { company_id:company_id, role:role },
+      //     });
+
+      //     if (!settingToConnect) {
+      //       throw new InternalServerErrorException(
+      //         'User setting not found for the role.',
+      //       );
+      //     }
+
+      //     const updatedUser = await this.prisma.user.update({
+      //       where: { email },
+      //       data: {
+      //         role: role,
+      //         settings: {
+      //           connect: { id: settingToConnect.id },
+      //         },
+      //       },
+      //       include: { settings: true },
+      //     });
+
+      //     return updatedUser;
+      //   }
+      // }
 
       // If user doesn't exist or password didn't match, hash password
       const hashedPassword = await this.passwordService.hashPassword(password);
