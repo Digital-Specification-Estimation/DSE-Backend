@@ -9,7 +9,7 @@ import { startOfDay, endOfDay } from 'date-fns';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
   async addingAttendance(createAttendance: CreateAttendanceDto) {
     return this.prisma.attendance.create({ data: { ...createAttendance } });
   }
@@ -325,34 +325,39 @@ export class AttendanceService {
     time: string,
   ) {
     if (time === 'today') {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
+      try {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
 
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-      const attendanceExist = await this.prisma.attendance.findFirst({
-        where: {
-          date: { gte: startOfDay, lte: endOfDay },
-          employee_id: userId,
-        },
-      });
-      if (!attendanceExist) {
-        return await this.prisma.attendance.create({
-          data: {
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        const attendanceExist = await this.prisma.attendance.findFirst({
+          where: {
+            date: { gte: startOfDay, lte: endOfDay },
             employee_id: userId,
+          },
+        });
+        if (!attendanceExist) {
+          return await this.prisma.attendance.create({
+            data: {
+              employee_id: userId,
+              status,
+            },
+          });
+        }
+        console.log('attendance updated', attendanceExist)
+        return await this.prisma.attendance.updateMany({
+          where: {
+            employee_id: userId,
+            date: { gte: startOfDay, lte: endOfDay },
+          },
+          data: {
             status,
           },
         });
+      } catch (error) {
+        console.log(error);
       }
-      return await this.prisma.attendance.updateMany({
-        where: {
-          employee_id: userId,
-          date: { gte: startOfDay, lte: endOfDay },
-        },
-        data: {
-          status,
-        },
-      });
     } else {
       const update = await this.prisma.attendance.updateMany({
         where: {
@@ -373,19 +378,28 @@ export class AttendanceService {
     const where: any = {
       employee_id: employeeId,
     };
-
+  
     if (startDate && endDate) {
+      // Convert dates to start and end of day for proper date range comparison
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
       where.date = {
-        gte: startDate,
-        lte: endDate,
+        gte: start,
+        lte: end,
       };
     }
-
-    return this.prisma.attendance.findMany({
+  
+    const attendance = await this.prisma.attendance.findMany({
       where,
       orderBy: {
         date: 'desc',
       },
     });
+    
+    return attendance;
   }
 }
