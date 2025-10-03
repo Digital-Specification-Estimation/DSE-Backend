@@ -236,6 +236,7 @@ export class AttendanceService {
     };
   }
   async addingReason(reasonType: ReasonType) {
+    console.log('reasonType', reasonType);
     if (
       await !this.attendanceExistsByDate(
         reasonType.date,
@@ -401,5 +402,45 @@ export class AttendanceService {
     });
     
     return attendance;
+  }
+  async getAttendancesWithReasons(employeeId: string, startDate?: Date, endDate?: Date) {
+    const where: any = {
+      employee_id: employeeId,
+      reason: { not: null },
+    };
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      where.date = {
+        gte: start,
+        lte: end,
+      };
+    }
+
+    return this.prisma.attendance.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            username: true,
+            daily_rate: true,
+            trade_position: {
+              select: {
+                trade_name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
   }
 }
