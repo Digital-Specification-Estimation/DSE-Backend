@@ -576,4 +576,281 @@ async addEmployee(
       console.log(error);
     }
   }
+
+  async bulkUploadFromCSV(
+    csvData: any[],
+    userId: string,
+    companyId: string,
+  ) {
+    const results = {
+      locations: { created: 0, skipped: 0, errors: [] as string[] },
+      trades: { created: 0, skipped: 0, errors: [] as string[] },
+      projects: { created: 0, skipped: 0, errors: [] as string[] },
+      employees: { created: 0, skipped: 0, errors: [] as string[] },
+    };
+
+    // Maps to store created entities for reference
+    const locationMap = new Map<string, string>(); // location_name -> id
+    const tradeMap = new Map<string, string>(); // trade_name+location -> id
+    const projectMap = new Map<string, string>(); // project_name+location -> id
+
+    try {
+      // Step 1: Process Locations
+      const uniqueLocations = new Set<string>();
+      csvData.forEach((row) => {
+        if (row.location_name) {
+          uniqueLocations.add(row.location_name.trim());
+        }
+      });
+
+      for (const locationName of uniqueLocations) {
+        try {
+          // Check if location already exists
+          const existing = await this.prisma.location.findFirst({
+            where: {
+              location_name: { equals: locationName, mode: 'insensitive' },
+              company_id: companyId,
+            },
+          });
+
+          if (existing) {
+            locationMap.set(locationName.toLowerCase(), existing.id);
+            results.locations.skipped++;
+          } else {
+            const newLocation = await this.prisma.location.create({
+              data: { location_name: locationName, company_id: companyId },
+            });
+            locationMap.set(locationName.toLowerCase(), newLocation.id);
+            results.locations.created++;
+          }
+        } catch (error) {
+          results.locations.errors.push(
+            `Location "${locationName}": ${error.message}`,
+          );
+        }
+      }
+
+      // Step 2: Process Projects
+      const uniqueProjects = new Map<string, any>();
+      csvData.forEach((row) => {
+        const projectName = row.project_name || row.project_name;
+        const locationName = row.location_name || row.location_name;
+        const projectBudget = row.project_budget || row.project_budget;
+        const projectStartDate = row.project_start_date || row.project_start_date;
+        const projectEndDate = row.project_end_date || row.project_end_date;
+
+        if (projectName && locationName) {
+          const key = `${projectName.trim()}|${locationName.trim()}`;
+          if (!uniqueProjects.has(key)) {
+            uniqueProjects.set(key, {
+              project_name: projectName.trim(),
+              location_name: locationName.trim(),
+              budget: projectBudget || '0',
+              start_date: projectStartDate || new Date().toISOString(),
+              end_date: projectEndDate || new Date().toISOString(),
+            });
+          }
+        }
+      });
+
+      for (const [key, projectData] of uniqueProjects) {
+        try {
+          // Check if project already exists
+          const existing = await this.prisma.project.findFirst({
+            where: {
+              project_name: {
+                equals: projectData.project_name,
+                mode: 'insensitive',
+              },
+              location_name: {
+                equals: projectData.location_name,
+                mode: 'insensitive',
+              },
+              company_id: companyId,
+            },
+          });
+
+          if (existing) {
+            projectMap.set(key.toLowerCase(), existing.id);
+            results.projects.skipped++;
+          } else {
+            const newProject = await this.prisma.project.create({
+              data: {
+                project_name: projectData.project_name,
+                location_name: projectData.location_name,
+                budget: projectData.budget,
+                start_date: new Date(projectData.start_date),
+                end_date: new Date(projectData.end_date),
+                company_id: companyId,
+              },
+            });
+            projectMap.set(key.toLowerCase(), newProject.id);
+            results.projects.created++;
+          }
+        } catch (error) {
+          results.projects.errors.push(
+            `Project "${projectData.project_name}": ${error.message}`,
+          );
+        }
+      }
+
+      // Step 3: Process Trades
+      const uniqueTrades = new Map<string, any>();
+      csvData.forEach((row) => {
+        const tradeName = row.trade_name || row.trade_name;
+        const locationName = row.location_name || row.location_name;
+        const dailyPlannedCost = row.trade_daily_planned_cost || row.daily_planned_cost;
+        const monthlyPlannedCost = row.trade_monthly_planned_cost || row.monthly_planned_cost;
+        const workDays = row.trade_work_days || row.work_days;
+        const plannedSalary = row.trade_planned_salary || row.planned_salary;
+        const projectName = row.project_name || row.project_name;
+
+        if (tradeName && locationName) {
+          const key = `${tradeName.trim()}|${locationName.trim()}`;
+          if (!uniqueTrades.has(key)) {
+            uniqueTrades.set(key, {
+              trade_name: tradeName.trim(),
+              location_name: locationName.trim(),
+              daily_planned_cost: dailyPlannedCost || '0',
+              monthly_planned_cost: monthlyPlannedCost || '0',
+              work_days: workDays ? parseInt(workDays) : 0,
+              planned_salary: plannedSalary || '0',
+              project_name: projectName?.trim(),
+            });
+          }
+        }
+      });
+
+      for (const [key, tradeData] of uniqueTrades) {
+        try {
+          // Check if trade already exists
+          const existing = await this.prisma.tradePosition.findFirst({
+            where: {
+              trade_name: { equals: tradeData.trade_name, mode: 'insensitive' },
+              location_name: {
+                equals: tradeData.location_name,
+                mode: 'insensitive',
+              },
+              company_id: companyId,
+            },
+          });
+
+          if (existing) {
+            tradeMap.set(key.toLowerCase(), existing.id);
+            results.trades.skipped++;
+          } else {
+            // Get project ID if project_name is provided
+            let projectId: string | null = null;
+            if (tradeData.project_name) {
+              const projectKey = `${tradeData.project_name}|${tradeData.location_name}`;
+              projectId = projectMap.get(projectKey.toLowerCase()) || null;
+            }
+
+            const newTrade = await this.prisma.tradePosition.create({
+              data: {
+                trade_name: tradeData.trade_name,
+                location_name: tradeData.location_name,
+                daily_planned_cost: tradeData.daily_planned_cost,
+                monthly_planned_cost: tradeData.monthly_planned_cost,
+                work_days: tradeData.work_days,
+                planned_salary: tradeData.planned_salary,
+                company_id: companyId,
+                projectId: projectId,
+              },
+            });
+            tradeMap.set(key.toLowerCase(), newTrade.id);
+            results.trades.created++;
+          }
+        } catch (error) {
+          results.trades.errors.push(
+            `Trade "${tradeData.trade_name}": ${error.message}`,
+          );
+        }
+      }
+
+      // Step 4: Process Employees
+      for (const row of csvData) {
+        // Support both old and new column names for backward compatibility
+        const username = row.employee_name || row.username;
+        const tradeName = row.trade_name || row.trade_name;
+        const locationName = row.location_name || row.location_name;
+        const dailyRate = row.employee_daily_rate || row.daily_rate;
+        const monthlyRate = row.employee_monthly_rate || row.monthly_rate;
+        const contractStartDate = row.employee_contract_start_date || row.contract_start_date;
+        const contractFinishDate = row.employee_contract_finish_date || row.contract_finish_date;
+        const budgetBaseline = row.employee_budget_baseline || row.budget_baseline;
+
+        if (!username || !tradeName || !locationName) {
+          results.employees.errors.push(
+            `Row missing required fields: employee_name, trade_name, or location_name`,
+          );
+          continue;
+        }
+
+        try {
+          // Find the trade position
+          const tradeKey = `${tradeName.trim()}|${locationName.trim()}`;
+          const tradePositionId = tradeMap.get(tradeKey.toLowerCase());
+
+          if (!tradePositionId) {
+            results.employees.errors.push(
+              `Employee "${username}": Trade position not found`,
+            );
+            continue;
+          }
+
+          // Always calculate days projection from contract dates
+          let daysProjection = 0;
+          if (contractStartDate && contractFinishDate) {
+            daysProjection = this.calculateBusinessDays(
+              new Date(contractStartDate),
+              new Date(contractFinishDate),
+            );
+          }
+
+          const newEmployee = await this.prisma.employee.create({
+            data: {
+              username: username.trim(),
+              trade_position_id: tradePositionId,
+              daily_rate: dailyRate || '0',
+              monthly_rate: monthlyRate || '0',
+              contract_start_date: contractStartDate
+                ? new Date(contractStartDate)
+                : new Date(),
+              contract_finish_date: contractFinishDate
+                ? new Date(contractFinishDate)
+                : null,
+              days_projection: daysProjection > 0 ? daysProjection : null,
+              budget_baseline: budgetBaseline || '0',
+              company_id: companyId,
+            },
+          });
+
+          results.employees.created++;
+        } catch (error) {
+          results.employees.errors.push(
+            `Employee "${username}": ${error.message}`,
+          );
+        }
+      }
+
+      // Send notification
+      if (
+        results.locations.created > 0 ||
+        results.trades.created > 0 ||
+        results.projects.created > 0 ||
+        results.employees.created > 0
+      ) {
+        await this.notificationGateway.sendBroadcastNotification(
+          userId,
+          `Bulk upload completed: ${results.employees.created} employees, ${results.trades.created} trades, ${results.projects.created} projects, ${results.locations.created} locations created`,
+        );
+      }
+
+      return results;
+    } catch (error) {
+      console.error('Bulk upload error:', error);
+      throw error;
+    }
+  }
 }
