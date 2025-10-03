@@ -10,11 +10,16 @@ import {
   ParseIntPipe,
   Query,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
 import { UpdateEmployeeDto } from '../dto/update-employee.dto';
 import { strict } from 'assert';
+import * as csv from 'csv-parser';
+import { Readable } from 'stream';
 
 @Controller('employee')
 export class EmployeeController {
@@ -95,5 +100,39 @@ async getEmployees(@Request() req: any) {
       req.user.salary_calculation,
       req.user.company_id,
     );
+  }
+
+  @Post('bulk-upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async bulkUpload(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+
+    // Parse CSV file
+    const csvData: any[] = [];
+    const stream = Readable.from(file.buffer.toString());
+
+    return new Promise((resolve, reject) => {
+      stream
+        .pipe(csv())
+        .on('data', (row) => csvData.push(row))
+        .on('end', async () => {
+          try {
+            const result = await this.employeeService.bulkUploadFromCSV(
+              csvData,
+              req.user.id,
+              req.user.company_id,
+            );
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .on('error', (error) => reject(error));
+    });
   }
 }

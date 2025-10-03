@@ -1,0 +1,16 @@
+username,trade_name,location_name,daily_rate,monthly_rate,contract_start_date,contract_finish_date,days_projection,budget_baseline,daily_planned_cost,monthly_planned_cost,work_days,planned_salary,project_name,project_budget,project_start_date,project_end_date
+Samuel Kimani,Carpenter,Kigali Downtown,15000,450000,2024-01-15,2024-06-15,120,1800000,14000,420000,120,1680000,Kigali Convention Center,50000000,2024-01-01,2024-12-31
+Grace Uwase,Electrician,Kigali Downtown,18000,540000,2024-01-20,2024-07-20,130,2340000,17000,510000,130,2210000,Kigali Convention Center,50000000,2024-01-01,2024-12-31
+Patrick Niyonzima,Plumber,Kigali Downtown,16000,480000,2024-02-01,2024-08-01,130,2080000,15000,450000,130,1950000,Kigali Convention Center,50000000,2024-01-01,2024-12-31
+Alice Mukamana,Mason,Kigali Downtown,14000,420000,2024-01-10,2024-05-10,90,1260000,13000,390000,90,1170000,Kigali Convention Center,50000000,2024-01-01,2024-12-31
+Jean Baptiste,Painter,Kigali Downtown,12000,360000,2024-02-15,2024-06-15,90,1080000,11000,330000,90,990000,Kigali Convention Center,50000000,2024-01-01,2024-12-31
+Emmanuel Habimana,Welder,Nyarugenge District,20000,600000,2024-03-01,2024-09-01,130,2600000,19000,570000,130,2470000,Nyarugenge Shopping Mall,75000000,2024-02-15,2025-02-15
+Marie Claire,Carpenter,Nyarugenge District,15500,465000,2024-03-05,2024-09-05,130,2015000,14500,435000,130,1885000,Nyarugenge Shopping Mall,75000000,2024-02-15,2025-02-15
+David Mugisha,Electrician,Nyarugenge District,17500,525000,2024-01-25,2024-07-25,130,2275000,16500,495000,130,2145000,Nyarugenge Shopping Mall,75000000,2024-02-15,2025-02-15
+Christine Uwera,Mason,Gasabo District,14500,435000,2024-02-10,2024-08-10,130,1885000,13500,405000,130,1755000,Gasabo Residential Complex,60000000,2024-01-15,2024-10-15
+Joseph Kamanzi,Plumber,Gasabo District,16500,495000,2024-02-20,2024-08-20,130,2145000,15500,465000,130,2015000,Gasabo Residential Complex,60000000,2024-01-15,2024-10-15
+Francine Mukandori,Carpenter,Gasabo District,15200,456000,2024-03-01,2024-09-01,130,1976000,14200,426000,130,1846000,Gasabo Residential Complex,60000000,2024-01-15,2024-10-15
+Eric Nshimiyimana,Electrician,Gasabo District,17800,534000,2024-03-10,2024-09-10,130,2314000,16800,504000,130,2184000,Gasabo Residential Complex,60000000,2024-01-15,2024-10-15
+Diane Uwimana,Mason,Kicukiro District,14200,426000,2024-01-20,2024-07-20,130,1846000,13200,396000,130,1716000,Kicukiro Industrial Park,100000000,2024-01-05,2025-01-05
+Claude Nsengimana,Welder,Kicukiro District,19500,585000,2024-02-01,2024-08-01,130,2535000,18500,555000,130,2405000,Kicukiro Industrial Park,100000000,2024-01-05,2025-01-05
+Immaculee Uwineza,Plumber,Kicukiro District,16200,486000,2024-02-15,2024-08-15,130,2106000,15200,456000,130,1976000,Kicukiro Industrial Park,100000000,2024-01-05,2025-01-05

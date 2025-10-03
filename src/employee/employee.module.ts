@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MulterModule } from '@nestjs/platform-express';
 import { EmployeeService } from './services/employee.service';
 import { EmployeeController } from './controllers/employee.controller';
 import { UsersModule } from 'src/users/users.module';
@@ -8,6 +9,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { NotificationsGateway } from 'src/notifications/gateways/notifications.gateway';
 import { NotificationsService } from 'src/notifications/services/notifications.service';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { memoryStorage } from 'multer';
 
 @Module({
   controllers: [EmployeeController],
@@ -18,6 +20,13 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     NotificationsGateway,
     NotificationsService,
   ],
-  imports: [UsersModule, PrismaModule, NotificationsModule],
+  imports: [
+    UsersModule,
+    PrismaModule,
+    NotificationsModule,
+    MulterModule.register({
+      storage: memoryStorage(),
+    }),
+  ],
 })
 export class EmployeeModule {}
