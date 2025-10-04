@@ -62,6 +62,7 @@ model Company {
   daily_total_planned_cost Decimal?
   daily_total_actual_cost Decimal?
   userSettings          UserSettings[] @relation("CompanyUserSettings")
+  expenses              Expense[]
 }
 
 model Attendance {
@@ -128,15 +129,36 @@ model  Location {
   company_id String?
 }
 model Project { 
-  id String @id @default(uuid())
-  project_name String @default("Project")
-  location_name String 
-  budget    Decimal?  @db.Decimal(10, 2)  @default(0)
-  company_id String?
-  trade_positions TradePosition[]
-  start_date DateTime 
-  end_date DateTime
+  id                String          @id @default(uuid())
+  project_name      String          @default("Project")
+  location_name     String 
+  budget            Decimal?        @db.Decimal(10, 2)  @default(0)
+  company_id        String?
+  trade_positions   TradePosition[]
+  expenses          Expense[]
+  start_date        DateTime 
+  end_date          DateTime
 }
+
+model Expense {
+  id          String         @id @default(uuid())
+  amount      Decimal        @db.Decimal(10, 2)
+  description String
+  date        DateTime       @default(now())
+  receiptUrl  String?        // URL to the receipt file in storage
+  notes       String?        // Additional notes about the expense
+  
+  // Relationships
+  projectId   String
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  companyId   String
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
 model Notification {
   id        String  @id @default(uuid())
   message   String
