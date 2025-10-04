@@ -45,6 +45,18 @@ model User {
   companies          Company[]    @relation("UserCompanies")
   logs               Log[]
   role_request_approval RoleRequestStatus? @default(PENDING)
+  salary_calculation  String?    @default("daily rate")
+  currency           String?    @default("RWF")
+  payslip_format     String?    @default("PDF")
+  current_role       String?
+  google_id          String?
+  apple_id           String?
+  notifications      Notification[]
+  image_url          String?
+  settings           UserSettings[]  @relation("userSettings")
+  companies          Company[]    @relation("UserCompanies")
+  logs               Log[]
+  role_request_approval RoleRequestStatus? @default(PENDING)
 }
 
 model Company {
@@ -54,7 +66,9 @@ model Company {
   business_type         String
   standard_work_hours   Int
   base_currency         String?         @default("RWF")
+  base_currency         String?         @default("RWF")
   weekly_work_limit     Int
+  holidays              String[]
   holidays              String[]
   overtime_rate         Decimal
   users                 User[]        @relation("UserCompanies")
@@ -101,6 +115,7 @@ model Employee {
   created_date         DateTime  @default(now())
   attendance           Attendance[]
   contract_finish_date DateTime?
+  contract_start_date DateTime?
   contract_start_date DateTime?
   days_projection      Int?
   budget_baseline      Decimal?   @default(0)
@@ -169,6 +184,21 @@ model Notification {
   createdAt  DateTime @default(now())
 }
 
+model UserSettings {
+  id                String   @id @default(uuid())
+  role              String?
+  company_id        String?
+  company           Company? @relation("CompanyUserSettings", fields: [company_id], references: [id], onDelete: Cascade)
+  user              User[]   @relation("userSettings")
+  full_access       Boolean?
+  approve_attendance Boolean? //done
+  manage_payroll    Boolean?
+  view_reports      Boolean?
+  approve_leaves    Boolean?
+  view_payslip      Boolean? //done
+  mark_attendance   Boolean? //done
+  manage_employees  Boolean? //done
+  generate_reports  Boolean? //done
 model UserSettings {
   id                String   @id @default(uuid())
   role              String?

@@ -12,7 +12,7 @@ export class UsersService {
 
   async findOne(email: string, role: string): Promise<User | null> {
     return this.prisma.user.findFirst({
-      where: { email, role: { hasSome: [role] } },
+      where: { email, role: { hasSome: [role] }},
       include: { companies: true, settings: true },
     });
   }
