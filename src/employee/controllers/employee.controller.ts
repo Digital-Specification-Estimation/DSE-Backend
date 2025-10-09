@@ -13,12 +13,14 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as csv from 'csv-parser';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
 import { UpdateEmployeeDto } from '../dto/update-employee.dto';
+import { AuthenticatedGuard } from '../../auth/guards/authenticated.guard';
 import { strict } from 'assert';
 
 @Controller('employee')
@@ -71,6 +73,17 @@ async getEmployees(@Request() req: any) {
   async getEmployee(@Param('id') id: string) {
     return await this.employeeService.getEmployee(id);
   }
+  @Get('payroll/project/:projectId')
+  @UseGuards(AuthenticatedGuard)
+  async getProjectPayroll(
+    @Param('projectId') projectId: string,
+    @Query('companyId') companyId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.employeeService.calculateProjectPayroll(projectId, companyId, startDate, endDate);
+  }
+
   @Get('payroll/:year/:month')
   async getTotalPayroll(
     @Param('year', ParseIntPipe) year: number,

@@ -241,18 +241,21 @@ model ProjectExpense {
 }
 
 model ProjectRevenue {
-  id            String    @id @default(uuid())
-  from_date     DateTime
-  to_date       DateTime
-  quantity_done Decimal   @db.Decimal(15, 2)
-  rate          Decimal   @db.Decimal(15, 2)
-  amount        Decimal   @db.Decimal(15, 2)
-  project_id    String
-  boq_item_id   String
-  company_id    String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id                  String    @id @default(uuid())
+  from_date           DateTime
+  to_date             DateTime
+  quantity_completed  Decimal   @db.Decimal(15, 2)
+  rate                Decimal   @db.Decimal(15, 2)
+  amount              Decimal   @db.Decimal(15, 2)
+  unit                String
+  boq_item_no         String
+  boq_description     String
+  project_id          String
+  boq_item_id         String
+  company_id          String
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
   
-  project       Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  boq_item      BOQItem   @relation(fields: [boq_item_id], references: [id], onDelete: Cascade)
+  project             Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  boq_item            BOQItem   @relation(fields: [boq_item_id], references: [id], onDelete: Cascade)
 }

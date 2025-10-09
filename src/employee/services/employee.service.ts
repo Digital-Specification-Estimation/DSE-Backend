@@ -505,6 +505,201 @@ async addEmployee(
     };
   }
 
+  async calculateProjectPayroll(projectId: string, companyId: string, startDate?: string, endDate?: string) {
+    console.log('=== CALCULATE PROJECT PAYROLL DEBUG ===');
+    console.log('Project ID:', projectId);
+    console.log('Company ID:', companyId);
+    console.log('Date Range:', startDate, 'to', endDate);
+    
+    // Get project employees with trade positions (matching attendance-payroll logic)
+    const projectEmployees = await this.prisma.employee.findMany({
+      where: {
+        projectId: projectId,
+        company_id: companyId,
+      },
+      include: {
+        trade_position: true,
+        attendance: true, // Include all attendance records
+      },
+    });
+
+    console.log('Found employees:', projectEmployees.length);
+    console.log('Employee details:', projectEmployees.map(emp => ({
+      id: emp.id,
+      username: emp.username,
+      daily_rate: emp.daily_rate,
+      monthly_rate: emp.monthly_rate,
+      attendance_count: emp.attendance?.length || 0,
+      trade_position: emp.trade_position ? {
+        daily_planned_cost: emp.trade_position.daily_planned_cost,
+        monthly_planned_cost: emp.trade_position.monthly_planned_cost
+      } : null
+    })));
+
+    // Check if there are any attendance records at all
+    const allAttendanceRecords = await this.prisma.attendance.findMany({
+      where: {
+        employee_id: { in: projectEmployees.map(emp => emp.id) }
+      }
+    });
+    console.log('Total attendance records for all project employees:', allAttendanceRecords.length);
+    
+    // Check specifically for Jean Baptiste
+    const jeanBaptiste = projectEmployees.find(emp => emp.username === 'Jean Baptiste');
+    if (jeanBaptiste) {
+      const jeanAttendance = await this.prisma.attendance.findMany({
+        where: { employee_id: jeanBaptiste.id }
+      });
+      console.log('Jean Baptiste attendance records:', jeanAttendance.length);
+      console.log('Jean Baptiste attendance details:', jeanAttendance);
+    }
+
+    if (!projectEmployees.length) {
+      return {
+        totalGrossPay: 0,
+        totalNetPay: 0,
+        totalDeductions: 0,
+        employees: [],
+        summary: {
+          totalEmployees: 0,
+          totalGrossPay: 0,
+          totalNetPay: 0,
+          totalDeductions: 0,
+        },
+      };
+    }
+
+    // Get deductions for project employees
+    const deductions = await this.prisma.deduction.findMany({
+      where: {
+        employee_id: { in: projectEmployees.map(emp => emp.id) },
+      },
+    });
+
+    let totalGrossPay = 0;
+    let totalNetPay = 0;
+    let totalDeductions = 0;
+    const employeePayrollData: any[] = [];
+
+    for (const employee of projectEmployees) {
+      console.log(`\n--- Processing employee: ${employee.username} ---`);
+      
+      // Get daily rate - exact logic from attendance-payroll page
+      let dailyRate = Number(employee.daily_rate || 0);
+      console.log('Initial daily_rate:', dailyRate);
+      
+      if (dailyRate === 0 && employee.trade_position?.daily_planned_cost) {
+        dailyRate = Number(employee.trade_position.daily_planned_cost);
+        console.log('Using trade_position daily_planned_cost:', dailyRate);
+      }
+      // If still 0 and monthly rate exists, convert monthly to daily
+      if (dailyRate === 0 && employee.trade_position?.monthly_planned_cost) {
+        dailyRate = Number(employee.trade_position.monthly_planned_cost) / 30;
+        console.log('Using trade_position monthly_planned_cost / 30:', dailyRate);
+      }
+
+      const monthlyRate = Number(employee.monthly_rate || 0);
+      console.log('Monthly rate:', monthlyRate);
+      
+      // Filter attendance records by date range if provided
+      let employeeAttendance = employee.attendance || [];
+      console.log('Total attendance records:', employeeAttendance.length);
+      
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        employeeAttendance = employeeAttendance.filter(att => {
+          const attDate = new Date(att.date);
+          return attDate >= start && attDate <= end;
+        });
+        console.log('Filtered attendance records:', employeeAttendance.length);
+      }
+      
+      // Calculate attendance breakdown - exact logic from attendance-payroll (case insensitive)
+      const presentDays = employeeAttendance.filter(att => att.status?.toLowerCase() === 'present').length;
+      const lateDays = employeeAttendance.filter(att => att.status?.toLowerCase() === 'late').length;
+      
+      // Paid leave days (sick and vacation)
+      const sickDays = employeeAttendance.filter(att => 
+        att.status?.toLowerCase() === 'absent' && att.reason?.toLowerCase() === 'sick'
+      ).length;
+      const vacationDays = employeeAttendance.filter(att => 
+        att.status?.toLowerCase() === 'absent' && att.reason?.toLowerCase() === 'vacation'
+      ).length;
+      
+      // Unpaid absent days
+      const absentDays = employeeAttendance.filter(att => 
+        att.status?.toLowerCase() === 'absent' && (!att.reason || (att.reason?.toLowerCase() !== 'sick' && att.reason?.toLowerCase() !== 'vacation'))
+      ).length;
+      
+      // Working days = present + late + paid leave (sick + vacation)
+      // This matches the attendance-payroll logic exactly
+      const employeeWorkingDays = presentDays + lateDays + sickDays + vacationDays;
+      
+      console.log('Attendance breakdown:', {
+        presentDays,
+        lateDays,
+        sickDays,
+        vacationDays,
+        absentDays,
+        workingDays: employeeWorkingDays
+      });
+      
+      // Calculate gross pay - matching attendance-payroll logic
+      const employeeActualPayroll = employeeWorkingDays * dailyRate;
+      console.log('Gross pay calculation:', `${employeeWorkingDays} * ${dailyRate} = ${employeeActualPayroll}`);
+      
+      // Calculate automatic deductions - exact logic from attendance-payroll
+      const lateDeduction = lateDays * (dailyRate * 0.1); // 10% penalty per late day
+      
+      // Get manual deductions for this employee
+      const employeeDeductions = deductions.filter(ded => ded.employee_id === employee.id);
+      const employeeManualDeductions = employeeDeductions.reduce((sum, ded) => sum + Number(ded.amount || 0), 0);
+      
+      const totalEmployeeDeductions = lateDeduction + employeeManualDeductions;
+      
+      // Net payroll - exact calculation from attendance-payroll
+      // Note: Absent days are unpaid leave (0 pay), not deductions
+      const netPayroll = employeeActualPayroll - totalEmployeeDeductions;
+
+      totalGrossPay += employeeActualPayroll;
+      totalDeductions += totalEmployeeDeductions;
+      totalNetPay += netPayroll;
+
+      employeePayrollData.push({
+        employee_id: employee.id,
+        employee_name: employee.username,
+        daily_rate: dailyRate,
+        monthly_rate: monthlyRate,
+        working_days: employeeWorkingDays,
+        present_days: presentDays,
+        late_days: lateDays,
+        sick_days: sickDays,
+        vacation_days: vacationDays,
+        absent_days: absentDays,
+        gross_pay: employeeActualPayroll,
+        late_penalty: lateDeduction,
+        manual_deductions: employeeManualDeductions,
+        total_deductions: totalEmployeeDeductions,
+        net_pay: netPayroll,
+      });
+    }
+
+    return {
+      totalGrossPay,
+      totalNetPay,
+      totalDeductions,
+      employees: employeePayrollData,
+      summary: {
+        totalEmployees: projectEmployees.length,
+        totalGrossPay,
+        totalNetPay,
+        totalDeductions,
+        period: startDate && endDate ? `${startDate} to ${endDate}` : 'All time',
+      },
+    };
+  }
+
   async getPayrollBasedOnTime(daysAgo: number) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);

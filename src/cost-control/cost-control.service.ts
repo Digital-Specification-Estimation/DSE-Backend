@@ -10,6 +10,15 @@ export class CostControlService {
 
   // BOQ Item Management
   async createBOQItem(createBOQItemDto: CreateBOQItemDto) {
+    // Validate that the project exists
+    const projectExists = await this.prisma.project.findUnique({
+      where: { id: createBOQItemDto.project_id },
+    });
+
+    if (!projectExists) {
+      throw new NotFoundException(`Project with ID ${createBOQItemDto.project_id} not found`);
+    }
+
     const boqItem = await this.prisma.bOQItem.create({
       data: createBOQItemDto,
     });
@@ -59,6 +68,29 @@ export class CostControlService {
     const boqItem = await this.prisma.bOQItem.update({
       where: { id },
       data: updateData,
+    });
+
+    return {
+      ...boqItem,
+      quantity: Number(boqItem.quantity),
+      rate: Number(boqItem.rate),
+      amount: Number(boqItem.amount),
+      completed_qty: Number(boqItem.completed_qty || 0),
+    };
+  }
+
+  async updateBOQProgress(id: string, completedQuantity: number) {
+    const existingItem = await this.prisma.bOQItem.findUnique({
+      where: { id },
+    });
+
+    if (!existingItem) {
+      throw new NotFoundException(`BOQ Item with ID ${id} not found`);
+    }
+
+    const boqItem = await this.prisma.bOQItem.update({
+      where: { id },
+      data: { completed_qty: completedQuantity },
     });
 
     return {
@@ -165,6 +197,24 @@ export class CostControlService {
 
   // Project Revenue Management
   async createProjectRevenue(createProjectRevenueDto: CreateProjectRevenueDto) {
+    // Validate that the project exists
+    const projectExists = await this.prisma.project.findUnique({
+      where: { id: createProjectRevenueDto.project_id },
+    });
+
+    if (!projectExists) {
+      throw new NotFoundException(`Project with ID ${createProjectRevenueDto.project_id} not found`);
+    }
+
+    // Validate that the BOQ item exists
+    const boqItemExists = await this.prisma.bOQItem.findUnique({
+      where: { id: createProjectRevenueDto.boq_item_id },
+    });
+
+    if (!boqItemExists) {
+      throw new NotFoundException(`BOQ Item with ID ${createProjectRevenueDto.boq_item_id} not found`);
+    }
+
     const revenue = await this.prisma.projectRevenue.create({
       data: {
         ...createProjectRevenueDto,
@@ -175,7 +225,7 @@ export class CostControlService {
 
     return {
       ...revenue,
-      quantity_done: Number(revenue.quantity_done),
+      quantity_completed: Number(revenue.quantity_completed),
       rate: Number(revenue.rate),
       amount: Number(revenue.amount),
     };
@@ -205,7 +255,7 @@ export class CostControlService {
 
     return revenues.map(revenue => ({
       ...revenue,
-      quantity_done: Number(revenue.quantity_done),
+      quantity_completed: Number(revenue.quantity_completed),
       rate: Number(revenue.rate),
       amount: Number(revenue.amount),
     }));

@@ -46,6 +46,11 @@ export class CostControlController {
     return await this.costControlService.updateBOQItem(id, updateData);
   }
 
+  @Patch('boq-items/:id/progress')
+  async updateBOQProgress(@Param('id') id: string, @Body() progressData: { completed_quantity: number }) {
+    return await this.costControlService.updateBOQProgress(id, progressData.completed_quantity);
+  }
+
   @Delete('boq-items/:id')
   async deleteBOQItem(@Param('id') id: string) {
     return await this.costControlService.deleteBOQItem(id);
