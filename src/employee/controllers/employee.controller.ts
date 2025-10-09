@@ -14,6 +14,7 @@ import {
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
+import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as csv from 'csv-parser';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
