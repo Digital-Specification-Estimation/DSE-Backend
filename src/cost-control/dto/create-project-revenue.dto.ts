@@ -8,7 +8,7 @@ export class CreateProjectRevenueDto {
   to_date: string;
 
   @IsNumber()
-  quantity_done: number;
+  quantity_completed: number;
 
   @IsNumber()
   rate: number;
@@ -17,10 +17,19 @@ export class CreateProjectRevenueDto {
   amount: number;
 
   @IsString()
+  unit: string;
+
+  @IsString()
   project_id: string;
 
   @IsString()
   boq_item_id: string;
+
+  @IsString()
+  boq_item_no: string;
+
+  @IsString()
+  boq_description: string;
 
   @IsString()
   company_id: string;
