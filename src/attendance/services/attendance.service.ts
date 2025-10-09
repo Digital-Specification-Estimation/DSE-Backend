@@ -323,6 +323,7 @@ export class AttendanceService {
     status: string,
     date: string,
     time: string,
+    company_id:string
   ) {
     if (time === 'today') {
       const startOfDay = new Date(date);
@@ -341,16 +342,19 @@ export class AttendanceService {
           data: {
             employee_id: userId,
             status,
+            company_id
           },
         });
       }
       return await this.prisma.attendance.updateMany({
         where: {
           employee_id: userId,
+
           date: { gte: startOfDay, lte: endOfDay },
         },
         data: {
           status,
+          company_id
         },
       });
     } else {

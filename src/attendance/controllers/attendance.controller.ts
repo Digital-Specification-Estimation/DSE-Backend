@@ -104,14 +104,17 @@ export class AttendanceController {
       date: string;
       time: string;
     },
+    @Request() req:any
   ) {
     const { employeeId, status, date, time } = body;
     console.log('data', employeeId, status, date);
+    console.log("request user", req.user);
     const update = await this.attendanceService.editStatusUser(
       employeeId,
       status,
       date,
       time,
+      req.user.company_id
     );
     console.log('update', update);
     return update;
