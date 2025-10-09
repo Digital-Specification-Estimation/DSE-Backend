@@ -23,7 +23,8 @@ export class EmployeeEntity implements Employee {
 
   @ApiProperty({ description: 'Employee username' })
   @IsString()
-  username: string;
+  @IsOptional()
+  username: string | null;
 
   @ApiProperty({ description: 'Trade Position ID' })
   @IsUUID()
@@ -32,34 +33,34 @@ export class EmployeeEntity implements Employee {
   @ApiProperty({ description: 'Daily rate', required: false })
   @IsOptional()
   @IsDecimal()
-  daily_rate: Decimal;
+  daily_rate: Decimal | null;
 
   @ApiProperty({ description: 'Monthly rate', required: false })
   @IsOptional()
   @IsDecimal()
-  monthly_rate: Decimal;
+  monthly_rate: Decimal | null;
 
   @ApiProperty({ description: 'Contract start date', required: false })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  contract_start_date: Date;
+  contract_start_date: Date | null;
 
   @ApiProperty({ description: 'Contract finish date', required: false })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  contract_finish_date: Date;
+  contract_finish_date: Date | null;
 
   @ApiProperty({ description: 'Projected working days', required: false })
   @IsOptional()
   @IsNumber()
-  days_projection: number;
+  days_projection: number | null;
 
   @ApiProperty({ description: 'Budget baseline', required: false })
   @IsOptional()
   @IsDecimal()
-  budget_baseline: Decimal;
+  budget_baseline: Decimal | null;
 
   @ApiProperty({ description: 'Company ID' })
   @IsUUID()
@@ -70,4 +71,9 @@ export class EmployeeEntity implements Employee {
   @Type(() => Date)
   @IsDate()
   created_date: Date;
+
+  @ApiProperty({ description: 'Project ID', required: false })
+  @IsOptional()
+  @IsUUID()
+  projectId: string | null;
 }

@@ -10,7 +10,12 @@ import {
   ParseIntPipe,
   Query,
   Request,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as csv from 'csv-parser';
 import { CreateEmployeeDto } from '../dto/create-employee.dto';
 import { EmployeeService } from '../services/employee.service';
 import { UpdateEmployeeDto } from '../dto/update-employee.dto';
@@ -95,5 +100,61 @@ async getEmployees(@Request() req: any) {
       req.user.salary_calculation,
       req.user.company_id,
     );
+  }
+
+  @Post('bulk-upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async bulkUpload(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    if (!file.mimetype.includes('csv') && !file.originalname.endsWith('.csv')) {
+      throw new BadRequestException('File must be a CSV');
+    }
+
+    try {
+      // Parse CSV data
+      const results: any[] = [];
+      const csvString = file.buffer.toString('utf-8');
+      
+      return new Promise((resolve, reject) => {
+        const stream = require('stream');
+        const readable = new stream.Readable();
+        readable.push(csvString);
+        readable.push(null);
+
+        readable
+          .pipe(csv())
+          .on('data', (data: any) => results.push(data))
+          .on('end', async () => {
+            try {
+              console.log(`Parsed ${results.length} rows from CSV`);
+              
+              // Process the CSV data using the service
+              const uploadResult = await this.employeeService.bulkUploadFromCSV(
+                results,
+                req.user.id,
+                req.user.company_id,
+              );
+              
+              resolve(uploadResult);
+            } catch (error) {
+              console.error('CSV processing error:', error);
+              reject(new BadRequestException(error.message || 'Failed to process CSV'));
+            }
+          })
+          .on('error', (error: any) => {
+            console.error('CSV parsing error:', error);
+            reject(new BadRequestException('Failed to parse CSV file'));
+          });
+      });
+    } catch (error) {
+      console.error('Bulk upload error:', error);
+      throw new BadRequestException(error.message || 'Failed to process bulk upload');
+    }
   }
 }

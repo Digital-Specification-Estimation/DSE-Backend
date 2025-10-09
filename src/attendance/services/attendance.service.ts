@@ -375,9 +375,13 @@ export class AttendanceService {
     };
 
     if (startDate && endDate) {
+      // Set endDate to end of day (23:59:59.999) to include all records for that day
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      
       where.date = {
         gte: startDate,
-        lte: endDate,
+        lte: endOfDay,
       };
     }
 

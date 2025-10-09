@@ -35,6 +35,19 @@ export class ProjectService {
   }
   async deleteProject(id: string, userId: string) {
     if (await this.projectExists(id)) {
+      // First, unassign all employees from this project
+      await this.prisma.employee.updateMany({
+        where: { projectId: id },
+        data: { projectId: null }
+      });
+
+      // Also unassign all trade positions from this project
+      await this.prisma.tradePosition.updateMany({
+        where: { projectId: id },
+        data: { projectId: null }
+      });
+
+      // Then delete the project
       const project = await this.prisma.project.delete({ where: { id } });
       if (project) {
         await this.notificationGateway.sendBroadcastNotification(

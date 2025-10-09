@@ -40,4 +40,8 @@ export class TradePositionEntity implements TradePosition {
   @ApiProperty()
   @IsDecimal()
   planned_salary: Decimal;
+  @IsOptional()
+  @ApiProperty()
+  @IsDecimal()
+  late_deduction_rate: Decimal | null;
 }

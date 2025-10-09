@@ -208,7 +208,10 @@ async addEmployee(
   ): Promise<any[]> {
     const employees = await this.prisma.employee.findMany({
       where: { company_id },
-      include: { trade_position: true },
+      include: { 
+        trade_position: true,
+        project: true 
+      },
     });
 
     const dataMap: { [key: string]: { cost: number; planned: number } } = {};
@@ -252,6 +255,7 @@ async addEmployee(
       where: { company_id: companyId },
       include: {
         trade_position: { include: { project: true } },
+        project: true,
         company: true,
         attendance: true,
       },
@@ -574,6 +578,368 @@ async addEmployee(
       }
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  // CSV Bulk Upload Implementation - Comprehensive Master Template Processing
+  async bulkUploadFromCSV(csvData: any[], userId: string, companyId: string) {
+    console.log(`Starting bulk upload for company ${companyId} with ${csvData.length} records`);
+    
+    const results = {
+      success: true,
+      message: '',
+      details: {
+        locations: { created: 0, existing: 0, names: [] as string[] },
+        projects: { created: 0, existing: 0, names: [] as string[] },
+        trades: { created: 0, existing: 0, names: [] as string[] },
+        employees: { created: 0, existing: 0, names: [] as string[] },
+      },
+      errors: [] as string[],
+    };
+
+    try {
+      // STEP 1: LOCATION PROCESSING
+      console.log('Step 1: Processing locations...');
+      const uniqueLocations = [...new Set(csvData.map(row => row.location_name?.trim()).filter(Boolean))];
+      
+      for (const locationName of uniqueLocations) {
+        const existingLocation = await this.prisma.location.findFirst({
+          where: {
+            location_name: { equals: locationName, mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        if (!existingLocation) {
+          await this.prisma.location.create({
+            data: {
+              location_name: locationName,
+              company_id: companyId,
+            },
+          });
+          results.details.locations.created++;
+          results.details.locations.names.push(locationName);
+          console.log(`Created location: ${locationName}`);
+        } else {
+          results.details.locations.existing++;
+          console.log(`Location already exists: ${locationName}`);
+        }
+      }
+
+      // STEP 2: PROJECT PROCESSING
+      console.log('Step 2: Processing projects...');
+      const uniqueProjects = csvData.reduce((acc, row) => {
+        const key = `${row.project_name?.trim()}_${row.location_name?.trim()}`;
+        if (!acc[key] && row.project_name?.trim()) {
+          acc[key] = {
+            project_name: row.project_name.trim(),
+            location_name: row.location_name?.trim(),
+            budget: parseFloat(row.project_budget) || 0,
+            start_date: new Date(row.project_start_date),
+            end_date: new Date(row.project_end_date),
+          };
+        }
+        return acc;
+      }, {});
+
+      for (const projectData of Object.values(uniqueProjects) as any[]) {
+        const existingProject = await this.prisma.project.findFirst({
+          where: {
+            project_name: { equals: projectData.project_name, mode: 'insensitive' },
+            location_name: { equals: projectData.location_name, mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        if (!existingProject) {
+          await this.prisma.project.create({
+            data: {
+              ...projectData,
+              company_id: companyId,
+            },
+          });
+          results.details.projects.created++;
+          results.details.projects.names.push(projectData.project_name);
+          console.log(`Created project: ${projectData.project_name}`);
+        } else {
+          results.details.projects.existing++;
+          console.log(`Project already exists: ${projectData.project_name}`);
+        }
+      }
+
+      // STEP 3: TRADE PROCESSING WITH ENHANCED VALIDATION
+      console.log('Step 3: Processing trades with system-wide validation...');
+      
+      // Get ALL existing trades in the database for this company
+      const existingTrades = await this.prisma.tradePosition.findMany({
+        where: { company_id: companyId },
+        select: {
+          trade_name: true,
+          daily_planned_cost: true,
+          monthly_planned_cost: true,
+          location_name: true,
+        },
+      });
+
+      // Build a map of existing trade rates (by trade name only, ignoring location)
+      const existingTradeRates = new Map();
+      const databaseInconsistencies: string[] = [];
+
+      existingTrades.forEach(trade => {
+        const tradeName = trade.trade_name?.toLowerCase();
+        if (tradeName) {
+          const dailyRate = Number(trade.daily_planned_cost || 0);
+          const monthlyRate = Number(trade.monthly_planned_cost || 0);
+          
+          if (existingTradeRates.has(tradeName)) {
+            const existing = existingTradeRates.get(tradeName);
+            if (existing.daily !== dailyRate || existing.monthly !== monthlyRate) {
+              databaseInconsistencies.push(
+                `Database inconsistency: Trade '${trade.trade_name}' already exists with different rates. ` +
+                `Expected: Daily=${existing.daily}, Monthly=${existing.monthly}. ` +
+                `Found: Daily=${dailyRate}, Monthly=${monthlyRate}`
+              );
+            }
+          } else {
+            existingTradeRates.set(tradeName, { daily: dailyRate, monthly: monthlyRate });
+          }
+        }
+      });
+
+      // Report database inconsistencies
+      if (databaseInconsistencies.length > 0) {
+        results.errors = results.errors.concat(databaseInconsistencies);
+        console.warn('Database inconsistencies found:', databaseInconsistencies);
+      }
+
+      // Extract unique trades from CSV and validate against existing rates
+      const csvTradeMap = new Map();
+      const csvTradeErrors: string[] = [];
+
+      csvData.forEach((row, index) => {
+        const tradeName = row.trade_name?.trim();
+        if (tradeName) {
+          const dailyRate = parseFloat(row.trade_daily_planned_cost) || 0;
+          const monthlyRate = parseFloat(row.trade_monthly_planned_cost) || 0;
+          const tradeKey = tradeName.toLowerCase();
+
+          // Check against existing database rates
+          if (existingTradeRates.has(tradeKey)) {
+            const existing = existingTradeRates.get(tradeKey);
+            if (existing.daily !== dailyRate || existing.monthly !== monthlyRate) {
+              csvTradeErrors.push(
+                `Row ${index + 2}: Trade '${tradeName}' already exists in system with different rates. ` +
+                `Expected: Daily=${existing.daily}, Monthly=${existing.monthly}. ` +
+                `CSV has: Daily=${dailyRate}, Monthly=${monthlyRate}`
+              );
+            }
+          }
+
+          // Check internal CSV consistency
+          if (csvTradeMap.has(tradeKey)) {
+            const existing = csvTradeMap.get(tradeKey);
+            if (existing.daily !== dailyRate || existing.monthly !== monthlyRate) {
+              csvTradeErrors.push(
+                `Row ${index + 2}: Trade '${tradeName}' has inconsistent rates within CSV. ` +
+                `First occurrence: Daily=${existing.daily}, Monthly=${existing.monthly}. ` +
+                `This row: Daily=${dailyRate}, Monthly=${monthlyRate}`
+              );
+            }
+          } else {
+            csvTradeMap.set(tradeKey, {
+              trade_name: tradeName,
+              daily: dailyRate,
+              monthly: monthlyRate,
+              location_name: null, // Don't tie trades to specific locations
+            });
+          }
+        }
+      });
+
+      // If there are trade validation errors, stop processing
+      if (csvTradeErrors.length > 0) {
+        results.success = false;
+        results.errors = results.errors.concat(csvTradeErrors);
+        results.message = `Trade validation failed. Found ${csvTradeErrors.length} rate inconsistencies.`;
+        return results;
+      }
+
+      // Create trades that don't exist
+      for (const [tradeKey, tradeData] of csvTradeMap.entries()) {
+        if (!existingTradeRates.has(tradeKey)) {
+          await this.prisma.tradePosition.create({
+            data: {
+              trade_name: tradeData.trade_name,
+              daily_planned_cost: tradeData.daily,
+              monthly_planned_cost: tradeData.monthly,
+              location_name: null,
+              company_id: companyId,
+            },
+          });
+          results.details.trades.created++;
+          results.details.trades.names.push(tradeData.trade_name);
+          console.log(`Created trade: ${tradeData.trade_name}`);
+        } else {
+          results.details.trades.existing++;
+          console.log(`Trade already exists: ${tradeData.trade_name}`);
+        }
+      }
+
+      // STEP 4: ASSIGN TRADES TO PROJECTS
+      console.log('Step 4: Assigning trades to projects...');
+      
+      // Create a map of unique project-trade combinations from CSV
+      const projectTradeAssignments = new Map();
+      csvData.forEach(row => {
+        if (row.project_name?.trim() && row.trade_name?.trim()) {
+          const key = `${row.project_name.trim()}-${row.trade_name.trim()}`;
+          if (!projectTradeAssignments.has(key)) {
+            projectTradeAssignments.set(key, {
+              project_name: row.project_name.trim(),
+              trade_name: row.trade_name.trim(),
+              location_name: row.location_name?.trim(),
+              work_days: parseInt(row.trade_work_days) || 22,
+              planned_salary: parseFloat(row.trade_planned_salary) || 0,
+            });
+          }
+        }
+      });
+
+      // Assign trades to projects
+      for (const [key, assignment] of projectTradeAssignments.entries()) {
+        const project = await this.prisma.project.findFirst({
+          where: {
+            project_name: { equals: assignment.project_name, mode: 'insensitive' },
+            location_name: { equals: assignment.location_name, mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        const tradePosition = await this.prisma.tradePosition.findFirst({
+          where: {
+            trade_name: { equals: assignment.trade_name, mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        if (project && tradePosition) {
+          // Check if trade is already assigned to this project
+          const existingAssignment = await this.prisma.tradePosition.findFirst({
+            where: {
+              id: tradePosition.id,
+              projectId: project.id,
+            },
+          });
+
+          if (!existingAssignment) {
+            // Update the trade to assign it to the project
+            await this.prisma.tradePosition.update({
+              where: { id: tradePosition.id },
+              data: {
+                projectId: project.id,
+                work_days: assignment.work_days,
+                planned_salary: assignment.planned_salary,
+              },
+            });
+            console.log(`Assigned trade ${assignment.trade_name} to project ${assignment.project_name}`);
+          }
+        }
+      }
+
+      // STEP 5: EMPLOYEE PROCESSING
+      console.log('Step 5: Processing employees...');
+      
+      for (const row of csvData) {
+        if (!row.employee_name?.trim()) continue;
+
+        // Get the project for this employee
+        const project = await this.prisma.project.findFirst({
+          where: {
+            project_name: { equals: row.project_name?.trim(), mode: 'insensitive' },
+            location_name: { equals: row.location_name?.trim(), mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        // Get the trade position for this employee
+        const tradePosition = await this.prisma.tradePosition.findFirst({
+          where: {
+            trade_name: { equals: row.trade_name?.trim(), mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        if (!project || !tradePosition) {
+          results.errors = results.errors.concat([
+            `Employee ${row.employee_name}: Could not find ${!project ? 'project' : 'trade position'}`
+          ]);
+          continue;
+        }
+
+        // Check if employee already exists
+        const existingEmployee = await this.prisma.employee.findFirst({
+          where: {
+            username: { equals: row.employee_name.trim(), mode: 'insensitive' },
+            company_id: companyId,
+          },
+        });
+
+        if (!existingEmployee) {
+          // Calculate days projection
+          let daysProjection = 0;
+          if (row.employee_contract_start_date && row.employee_contract_finish_date) {
+            daysProjection = this.calculateBusinessDays(
+              new Date(row.employee_contract_start_date),
+              new Date(row.employee_contract_finish_date)
+            );
+          }
+
+          await this.prisma.employee.create({
+            data: {
+              username: row.employee_name.trim(),
+              trade_position_id: tradePosition.id,
+              daily_rate: parseFloat(row.employee_daily_rate) || 0,
+              monthly_rate: parseFloat(row.employee_monthly_rate) || 0,
+              contract_start_date: row.employee_contract_start_date ? new Date(row.employee_contract_start_date) : null,
+              contract_finish_date: row.employee_contract_finish_date ? new Date(row.employee_contract_finish_date) : null,
+              days_projection: daysProjection,
+              budget_baseline: parseFloat(row.employee_budget_baseline) || 0,
+              company_id: companyId,
+              projectId: project.id,
+            },
+          });
+          
+          results.details.employees.created++;
+          results.details.employees.names.push(row.employee_name.trim());
+          console.log(`Created employee: ${row.employee_name.trim()}`);
+        } else {
+          results.details.employees.existing++;
+          console.log(`Employee already exists: ${row.employee_name.trim()}`);
+        }
+      }
+
+      // Final success message
+      const totalCreated = 
+        results.details.locations.created + 
+        results.details.projects.created + 
+        results.details.trades.created + 
+        results.details.employees.created;
+
+      results.message = `Successfully processed CSV! Created ${totalCreated} new entities: ` +
+        `${results.details.locations.created} locations, ` +
+        `${results.details.projects.created} projects, ` +
+        `${results.details.trades.created} trades, ` +
+        `${results.details.employees.created} employees.`;
+
+      console.log('Bulk upload completed successfully:', results.message);
+      return results;
+
+    } catch (error) {
+      console.error('Bulk upload failed:', error);
+      results.success = false;
+      results.message = 'Bulk upload failed due to an error';
+      results.errors = results.errors.concat([error.message || 'Unknown error occurred']);
+      return results;
     }
   }
 }
