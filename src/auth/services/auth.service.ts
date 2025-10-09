@@ -43,6 +43,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException();
     }
+    console.log("user found")
     let isMatch;
     if (user?.password) {
       isMatch = await this.passwordService.comparePasswords(

@@ -11,10 +11,16 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findOne(email: string, role: string): Promise<User | null> {
-    return this.prisma.user.findFirst({
-      where: { email, role: { hasSome: [role] },role_request_approval:RoleRequestStatus.APPROVED },
+     const user =await this.prisma.user.findFirst({
+      where: { email, role: { hasSome: [role] } },
       include: { companies: true, settings: true },
-    });
+     });
+    if (!user) {
+      console.log("user not found")
+      
+    }
+    return user;
+    
   }
   async findAll() {
     return this.prisma.user.findMany();
