@@ -325,46 +325,46 @@ export class AttendanceService {
     time: string,
     company_id:string
   ) {
-    if (time === 'today') {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
+    // Parse the date properly
+    const targetDate = new Date(date);
+    const startOfTargetDay = new Date(targetDate);
+    startOfTargetDay.setHours(0, 0, 0, 0);
+    
+    const endOfTargetDay = new Date(targetDate);
+    endOfTargetDay.setHours(23, 59, 59, 999);
 
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-      const attendanceExist = await this.prisma.attendance.findFirst({
-        where: {
-          date: { gte: startOfDay, lte: endOfDay },
-          employee_id: userId,
-        },
-      });
-      if (!attendanceExist) {
-        return await this.prisma.attendance.create({
-          data: {
-            employee_id: userId,
-            status,
-            company_id
-          },
-        });
-      }
-      return await this.prisma.attendance.updateMany({
-        where: {
-          employee_id: userId,
+    // Get employee to fetch company_id
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: userId },
+      select: { company_id: true },
+    });
 
-          date: { gte: startOfDay, lte: endOfDay },
-        },
-        data: {
-          status,
-          company_id
-        },
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    // Check if attendance already exists for this date
+    const existingAttendance = await this.prisma.attendance.findFirst({
+      where: {
+        employee_id: userId,
+        date: { gte: startOfTargetDay, lte: endOfTargetDay },
+      },
+    });
+
+    if (existingAttendance) {
+      // Update existing attendance
+      return await this.prisma.attendance.update({
+        where: { id: existingAttendance.id },
+        data: { status },
       });
     } else {
-      const update = await this.prisma.attendance.updateMany({
-        where: {
-          employee_id: userId,
-          date: new Date(date),
-        },
+      // Create new attendance record with the specific date and company_id
+      return await this.prisma.attendance.create({
         data: {
+          employee_id: userId,
           status,
+          date: targetDate, // Set the specific date
+          company_id: employee.company_id, // Include company_id
         },
       });
     }

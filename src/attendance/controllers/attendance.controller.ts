@@ -107,8 +107,7 @@ export class AttendanceController {
     @Request() req:any
   ) {
     const { employeeId, status, date, time } = body;
-    console.log('data', employeeId, status, date);
-    console.log("request user", req.user);
+    console.log('Received attendance data:', { employeeId, status, date, time });
     const update = await this.attendanceService.editStatusUser(
       employeeId,
       status,
@@ -116,7 +115,7 @@ export class AttendanceController {
       time,
       req.user.company_id
     );
-    console.log('update', update);
+    console.log('Attendance update result:', update);
     return update;
   }
   @Get('history/:employeeId')

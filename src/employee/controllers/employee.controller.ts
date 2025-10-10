@@ -171,4 +171,26 @@ async getEmployees(@Request() req: any) {
       throw new BadRequestException(error.message || 'Failed to process bulk upload');
     }
   }
+
+  @Put('update-salary/:id')
+  async updateEmployeeSalary(
+    @Param('id') id: string,
+    @Body() body: { daily_rate?: number; monthly_rate?: number }
+  ) {
+    try {
+      console.log(`Updating salary for employee ${id}:`, body);
+      
+      const updatedEmployee = await this.employeeService.updateEmployeeSalary(
+        id,
+        body.daily_rate,
+        body.monthly_rate
+      );
+      
+      console.log('Employee salary updated:', updatedEmployee);
+      return updatedEmployee;
+    } catch (error) {
+      console.error('Error updating employee salary:', error);
+      throw new BadRequestException(error.message || 'Failed to update employee salary');
+    }
+  }
 }
