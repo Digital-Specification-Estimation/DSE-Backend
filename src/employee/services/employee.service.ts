@@ -1137,4 +1137,42 @@ async addEmployee(
       return results;
     }
   }
+
+  async updateEmployeeSalary(
+    employeeId: string,
+    daily_rate?: number,
+    monthly_rate?: number
+  ) {
+    try {
+      const updateData: any = {};
+      
+      if (daily_rate !== undefined) {
+        updateData.daily_rate = daily_rate;
+      }
+      
+      if (monthly_rate !== undefined) {
+        updateData.monthly_rate = monthly_rate;
+      }
+      
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('No salary data provided to update');
+      }
+      
+      const updatedEmployee = await this.prisma.employee.update({
+        where: { id: employeeId },
+        data: updateData,
+        select: {
+          id: true,
+          username: true,
+          daily_rate: true,
+          monthly_rate: true,
+        }
+      });
+      
+      return updatedEmployee;
+    } catch (error) {
+      console.error('Error updating employee salary:', error);
+      throw new NotFoundException(`Employee with ID ${employeeId} not found or update failed`);
+    }
+  }
 }

@@ -106,14 +106,14 @@ export class AttendanceController {
     },
   ) {
     const { employeeId, status, date, time } = body;
-    console.log('data', employeeId, status, date);
+    console.log('Received attendance data:', { employeeId, status, date, time });
     const update = await this.attendanceService.editStatusUser(
       employeeId,
       status,
       date,
       time,
     );
-    console.log('update', update);
+    console.log('Attendance update result:', update);
     return update;
   }
   @Get('history/:employeeId')
