@@ -405,6 +405,8 @@ async addEmployee(
             ) -
               daysAbsentNoReason);
         }
+        console.log("planned vs actual", plannedVsActual);
+
         return {
           ...employee,
           budget_baseline: employee.budget_baseline?.toString(),
@@ -430,8 +432,8 @@ async addEmployee(
           totalPlannedBytrade,
           plannedVsActual:
             plannedVsActual < 0
-              ? `Over Budget ${(plannedVsActual * currencyValue).toLocaleString()}`
-              : `Planned ${(plannedVsActual * currencyValue).toLocaleString()}`,
+              ? `Over Budget ${(plannedVsActual).toLocaleString()}`
+              : `Planned ${(plannedVsActual).toLocaleString()}`,
           totalActualPayroll,
         };
       }),
