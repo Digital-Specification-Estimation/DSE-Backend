@@ -281,8 +281,7 @@ async addEmployee(
             daysAbsentNoReason += 1;
           }
         });
-        let currencyValue = Number(splitCurrencyValue(currency)?.value);
-        let currencyShort = splitCurrencyValue(currency)?.currency;
+       
         const sickDays = await this.getAttendanceDaysBasedOnReason(
           employee.id,
           'sick',
@@ -406,6 +405,7 @@ async addEmployee(
               daysAbsentNoReason);
         }
         console.log("planned vs actual", plannedVsActual);
+        console.log("vacation days", vacationDays);
 
         return {
           ...employee,
