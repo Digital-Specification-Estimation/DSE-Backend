@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PrismaModule } from 'nestjs-prisma';
@@ -21,7 +22,7 @@ dotenv.config();
   imports: [
     PrismaModule,
     UsersModule,
-    PassportModule.register({ session: true }),
+    PassportModule.register({ defaultStrategy: 'local' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -32,17 +33,18 @@ dotenv.config();
     }),
     MailModule,
   ],
-  controllers: [AuthController],
   providers: [
     AuthService,
+    LocalStrategy,
     JwtStrategy,
+    GoogleStrategy,
     JwtAuthGuard,
     LocalAuthGuard,
-    GoogleStrategy,
     SessionSerializer,
     PasswordResetService,
     PasswordService,
   ],
+  controllers: [AuthController],
   exports: [AuthService],
 })
 export class AuthModule {}
