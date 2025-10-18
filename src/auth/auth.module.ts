@@ -12,12 +12,15 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { MailModule } from '../mail/mail.module';
 import { SessionSerializer } from './utils/Session.serializer';
 import { PasswordResetService } from './services/password-reset.service';
+import { UsersModule } from '../users/users.module';
+import { PasswordService } from './services/password.service';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 @Module({
   imports: [
     PrismaModule,
+    UsersModule,
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -38,6 +41,7 @@ dotenv.config();
     GoogleStrategy,
     SessionSerializer,
     PasswordResetService,
+    PasswordService,
   ],
   exports: [AuthService],
 })

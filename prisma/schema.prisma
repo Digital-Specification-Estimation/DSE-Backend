@@ -265,7 +265,7 @@ model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
   expiresAt DateTime
-  userId    String
+  userId    String   @unique 
   used      Boolean  @default(false)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
