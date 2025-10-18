@@ -69,6 +69,7 @@ export class AuthController {
   @ApiOkResponse({ type: ForgotPasswordResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid request' })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    console.log("forgotPasswordDto",forgotPasswordDto)
     await this.passwordResetService.createPasswordResetToken(forgotPasswordDto.email);
     return { message: 'If an account with that email exists, you will receive a password reset link' };
   }
@@ -79,6 +80,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'Password has been reset successfully' })
   @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    console.log("resetPasswordDto",resetPasswordDto)
     await this.passwordResetService.resetPassword(resetPasswordDto);
     return { message: 'Password has been reset successfully' };
   }

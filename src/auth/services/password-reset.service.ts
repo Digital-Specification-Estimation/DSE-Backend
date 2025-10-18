@@ -4,6 +4,7 @@ import { randomBytes, createHash } from 'crypto';
 import { addHours } from 'date-fns';
 import { MailService } from 'src/mail/mail.service';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dto/forgot-password.dto';
+import { PasswordService } from './password.service';
 
 @Injectable()
 export class PasswordResetService {
@@ -12,6 +13,7 @@ export class PasswordResetService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(MailService) private readonly mailService: MailService,
+    @Inject(PasswordService) private readonly passwordService: PasswordService,
   ) {}
 
   async createPasswordResetToken(email: string): Promise<string | null> {
@@ -19,9 +21,11 @@ export class PasswordResetService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     
     if (!user) {
+      throw new NotFoundException('User not found');
       // For security reasons, don't reveal if the email exists or not
       return null;
     }
+    console.log('forgot password endpoint');
 
     // Generate a random token
     const token = randomBytes(32).toString('hex');
@@ -53,7 +57,7 @@ export class PasswordResetService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<boolean> {
     const { token, newPassword, confirmPassword } = resetPasswordDto;
-
+console.log('reset password endpoint');
     if (newPassword !== confirmPassword) {
       throw new Error('Passwords do not match');
     }
@@ -80,11 +84,13 @@ export class PasswordResetService {
       where: { id: resetToken.id },
       data: { used: true },
     });
+    const hashedPassword = await this.passwordService.hashPassword(newPassword);
+    console.log('hashedPassword', hashedPassword);
 
     // Update user's password
     await this.prisma.user.update({
       where: { id: resetToken.userId },
-      data: { password: newPassword }, // The password will be hashed by the UserService
+      data: { password: hashedPassword }, // The password will be hashed by the UserService
     });
 
     return true;
