@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, Inject } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { randomBytes, createHash } from 'crypto';
 import { addHours } from 'date-fns';
@@ -10,8 +10,8 @@ export class PasswordResetService {
   private readonly TOKEN_EXPIRATION_HOURS = 1;
 
   constructor(
-    private prisma: PrismaService,
-    private mailService: MailService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(MailService) private readonly mailService: MailService,
   ) {}
 
   async createPasswordResetToken(email: string): Promise<string | null> {

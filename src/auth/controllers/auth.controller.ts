@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Post,
   Req,
@@ -20,6 +21,8 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   LoginBodyDto,
@@ -31,9 +34,17 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { AuthenticatedGuard } from '../guards/authenticated.guard';
 import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { Response as Resp, Request as Re } from 'express';
+import { ForgotPasswordDto, ForgotPasswordResponseDto, ResetPasswordDto } from '../dto/forgot-password.dto';
+import { PasswordResetService } from '../services/password-reset.service';
+
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private passwordResetService: PasswordResetService,
+  ) {}
+
   @UseGuards(LocalAuthGuard)
   @ApiCreatedResponse({ type: LoginResponseDto })
   @ApiBody({ type: LoginBodyDto })
@@ -43,12 +54,33 @@ export class AuthController {
     console.log(req.user);
     return data;
   }
+
   @Post('signup')
   @ApiCreatedResponse({ type: UserEntity })
   @ApiBody({ type: CreateUserDto })
   async signup(@Body() createUserDto: CreateUserDto) {
     console.log("createUserDto",createUserDto)
     return new UserEntity(await this.authService.signup(createUserDto));
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request a password reset link' })
+  @ApiOkResponse({ type: ForgotPasswordResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid request' })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    await this.passwordResetService.createPasswordResetToken(forgotPasswordDto.email);
+    return { message: 'If an account with that email exists, you will receive a password reset link' };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using a token' })
+  @ApiOkResponse({ description: 'Password has been reset successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid or expired token' })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.passwordResetService.resetPassword(resetPasswordDto);
+    return { message: 'Password has been reset successfully' };
   }
 
   @Get('google')
@@ -68,6 +100,7 @@ export class AuthController {
       // res.redirect('http://localhost:3000/dashboard');
     }
   }
+
   @UseGuards(AuthenticatedGuard)
   @Get('session')
   getSession(@Request() req: any) {
@@ -85,6 +118,7 @@ export class AuthController {
       return { message: 'No user in session' };
     }
   }
+
   @Get('/logout')
   logout(@Request() req): any {
     console.log('called');
