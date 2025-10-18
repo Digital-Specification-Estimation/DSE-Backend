@@ -45,6 +45,7 @@ model User {
   companies          Company[]    @relation("UserCompanies")
   logs               Log[]
   role_request_approval RoleRequestStatus? @default(PENDING)
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Company {
@@ -258,4 +259,19 @@ model ProjectRevenue {
   
   project             Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
   boq_item            BOQItem   @relation(fields: [boq_item_id], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  userId    String
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
 }

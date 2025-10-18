@@ -1,44 +1,44 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
-import { UsersService } from 'src/users/services/users.service';
-import { UsersModule } from 'src/users/users.module';
-import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './controllers/auth.controller';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import * as dotenv from 'dotenv';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UserEntity } from 'src/users/entities/user.entity';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { PrismaModule } from 'nestjs-prisma';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { PasswordService } from './services/password.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { MailModule } from '../mail/mail.module';
 import { SessionSerializer } from './utils/Session.serializer';
+import { PasswordResetService } from './services/password-reset.service';
+import * as dotenv from 'dotenv';
 dotenv.config();
+
 @Module({
-  providers: [
-    AuthService,
-    UsersService,
-    CreateUserDto,
-    UserEntity,
-    LocalStrategy,
-    GoogleStrategy,
-    PasswordService,
-    PrismaService,
-    JwtStrategy,
-    SessionSerializer,
-  ],
   imports: [
-    UsersModule,
     PrismaModule,
     PassportModule.register({ session: true }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET as string,
-      // signOptions: { expiresIn: '1d' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '1d' },
+      }),
+      inject: [ConfigService],
     }),
+    MailModule,
   ],
   controllers: [AuthController],
-  exports: [AuthService, JwtModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    LocalAuthGuard,
+    GoogleStrategy,
+    SessionSerializer,
+    PasswordResetService,
+  ],
+  exports: [AuthService],
 })
 export class AuthModule {}
