@@ -16,9 +16,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
   const isProduction = process.env.NODE_ENV === 'production';
-  console.log("is production ",isProduction )
-  const allowedOrigins = isProduction 
-    ? 'https://dse-app.vercel.app'
+  console.log('is production ', isProduction);
+  const allowedOrigins = isProduction
+    ? 'https://www.dsestimation.rw'
     : 'http://localhost:3000';
 
   app.enableCors({
@@ -27,7 +27,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
   });
-  app.set("trust proxy", 1);
+  app.set('trust proxy', 1);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -61,7 +61,7 @@ async function bootstrap() {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: false,
         sameSite: isProduction ? 'none' : 'lax',
-       // domain: isProduction ? '.vercel.app' : undefined,
+        // domain: isProduction ? '.vercel.app' : undefined,
       },
     }),
   );
@@ -71,4 +71,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
-
