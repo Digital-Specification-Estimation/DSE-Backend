@@ -14,6 +14,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { PasswordService } from './password.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { OAuth2Client } from 'google-auth-library';
 import { connect } from 'http2';
 interface UserInt {
   provider: string;
@@ -25,25 +26,41 @@ interface UserInt {
   accessToken: string;
 }
 
+interface UserPayload {
+  email?: string;
+  sub: string;
+  name?: string;
+  picture?: string;
+}
+
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     private userService: UsersService,
     private jwtService: JwtService,
     private prisma: PrismaService,
     private passwordService: PasswordService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
+  async validateUserById(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+  }
   async validateUser(
     email: string,
     password: string,
     role: string,
   ): Promise<any> {
-    console.log("email",email,"password",password,"role",role)
-    const user = await this.userService.findOne(email, role,);
+    console.log('email', email, 'password', password, 'role', role);
+    const user = await this.userService.findOne(email, role);
     if (!user) {
       throw new UnauthorizedException();
     }
-    console.log("user found")
+    console.log('user found');
     let isMatch;
     if (user?.password) {
       isMatch = await this.passwordService.comparePasswords(
@@ -51,26 +68,45 @@ export class AuthService {
         user?.password,
       );
     }
-    console.log("user approval",user.role_request_approval , "user id",user.id,"password ", isMatch)
+    console.log(
+      'user approval',
+      user.role_request_approval,
+      'user id',
+      user.id,
+      'password ',
+      isMatch,
+    );
     if (user && isMatch) {
       await this.prisma.user.update({
-        where: { id: user.id},
+        where: { id: user.id },
         data: { current_role: role },
       });
       const { password, ...result } = user;
-console.log("result ",result)
+      console.log('result ', result);
       return result;
     }
 
     return null;
   }
-  async login(user: any) {
-    const payload = { email: user.email, sub: user.id };
-    return {
-      user,
-
-      // access_token: this.jwtService.sign(payload),
-    };
+  async login(user: UserPayload) {
+    // const payload = {
+    //   email: user.email,
+    //   sub: user.sub,
+    //   name: user.name,
+    //   picture: user.picture,
+    // };
+    try {
+      const userfound = await this.prisma.user.findUnique({
+        where: { email: user.email },
+      });
+      console.log('userfound', userfound);
+      return {
+        user: userfound,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException('User not found');
+    }
   }
 
   async signup(createUserDto: CreateUserDto): Promise<User> {
@@ -109,7 +145,7 @@ console.log("result ",result)
           const updatedRoles = [...existingUser.role, role];
 
           const settingToConnect = await this.prisma.userSettings.findFirst({
-            where: { company_id:company_id, role:role },
+            where: { company_id: company_id, role: role },
           });
 
           if (!settingToConnect) {
@@ -135,9 +171,9 @@ console.log("result ",result)
 
       // If user doesn't exist or password didn't match, hash password
       const hashedPassword = await this.passwordService.hashPassword(password);
-console.log("company id",company_id)
+      console.log('company id', company_id);
       const userSetting = await this.prisma.userSettings.findFirst({
-        where: { company_id:company_id, role:role },
+        where: { company_id: company_id, role: role },
       });
 
       if (!userSetting) {
@@ -160,9 +196,7 @@ console.log("company id",company_id)
           },
           include: { settings: true },
         });
-      }
-      else {
-      
+      } else {
         newUser = await this.prisma.user.create({
           data: {
             ...createUserDto,
@@ -196,6 +230,29 @@ console.log("company id",company_id)
       throw new InternalServerErrorException(
         'An error occurred while creating the user.',
       );
+    }
+  }
+  async verifyGoogleToken(token: string) {
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new Error('Google token payload is undefined');
+      }
+      console.log('payload', payload);
+      return {
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+        sub: payload.sub,
+      };
+    } catch (error: any) {
+      console.log(error);
+      throw new Error('Invalid Google token');
     }
   }
 

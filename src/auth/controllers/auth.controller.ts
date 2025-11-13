@@ -9,6 +9,7 @@ import {
   Request,
   Res,
   Response,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -34,8 +35,13 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { AuthenticatedGuard } from '../guards/authenticated.guard';
 import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { Response as Resp, Request as Re } from 'express';
-import { ForgotPasswordDto, ForgotPasswordResponseDto, ResetPasswordDto } from '../dto/forgot-password.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordResponseDto,
+  ResetPasswordDto,
+} from '../dto/forgot-password.dto';
 import { PasswordResetService } from '../services/password-reset.service';
+import { CustomAuthGuard } from '../guards/custom-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -59,19 +65,45 @@ export class AuthController {
   @ApiCreatedResponse({ type: UserEntity })
   @ApiBody({ type: CreateUserDto })
   async signup(@Body() createUserDto: CreateUserDto) {
-    console.log("createUserDto",createUserDto)
+    console.log('createUserDto', createUserDto);
     return new UserEntity(await this.authService.signup(createUserDto));
   }
 
+  @UseGuards(CustomAuthGuard)
+  @Post('google')
+  async googleauth(@Request() req) {
+    console.log(req.user);
+    return {
+      message: 'Login successful',
+      user: req.user,
+    };
+  }
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request a password reset link' })
   @ApiOkResponse({ type: ForgotPasswordResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid request' })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    console.log("forgotPasswordDto",forgotPasswordDto)
-    await this.passwordResetService.createPasswordResetToken(forgotPasswordDto.email);
-    return { message: 'If an account with that email exists, you will receive a password reset link' };
+    console.log('forgotPasswordDto', forgotPasswordDto);
+    await this.passwordResetService.createPasswordResetToken(
+      forgotPasswordDto.email,
+    );
+    return {
+      message:
+        'If an account with that email exists, you will receive a password reset link',
+    };
+  }
+  @Get('validate-google-token/:token')
+  async validateGoogleUser(@Request() req) {
+    try {
+      await this.authService.verifyGoogleToken(req.params.token);
+      return {
+        message: 'Google token is valid',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException('Invalid Google token');
+    }
   }
 
   @Post('reset-password')
@@ -80,28 +112,28 @@ export class AuthController {
   @ApiOkResponse({ description: 'Password has been reset successfully' })
   @ApiBadRequestResponse({ description: 'Invalid or expired token' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    console.log("resetPasswordDto",resetPasswordDto)
+    console.log('resetPasswordDto', resetPasswordDto);
     await this.passwordResetService.resetPassword(resetPasswordDto);
     return { message: 'Password has been reset successfully' };
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    return { message: 'Redirecting to Google OAuth...' };
-  }
+  // @Get('google')
+  // @UseGuards(AuthGuard('google'))
+  // async googleAuth() {
+  //   return { message: 'Redirecting to Google OAuth...' };
+  // }
 
-  @Get('google/redirect')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res) {
-    const user = await this.authService.validateGoogleUser(req.user);
-    if (user) {
-      console.log(user);
-      // res.redirect('https://digitalestimation.vercel.app/dashboard');
-      return user;
-      // res.redirect('http://localhost:3000/dashboard');
-    }
-  }
+  // @Get('google/redirect')
+  // @UseGuards(AuthGuard('google'))
+  // async googleAuthRedirect(@Req() req, @Res() res) {
+  //   const user = await this.authService.validateGoogleUser(req.user);
+  //   if (user) {
+  //     console.log(user);
+  //     // res.redirect('https://digitalestimation.vercel.app/dashboard');
+  //     return user;
+  //     // res.redirect('http://localhost:3000/dashboard');
+  //   }
+  // }
 
   @UseGuards(AuthenticatedGuard)
   @Get('session')

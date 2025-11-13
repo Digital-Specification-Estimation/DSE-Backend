@@ -9,8 +9,25 @@ export class SessionSerializer extends PassportSerializer {
   }
 
   serializeUser(user: any, done: (err: Error | null, id?: any) => void): void {
-    console.log('Serializing user:', user);
-    done(null, user.id);
+    try {
+      if (!user) {
+        return done(new Error('No user object provided'));
+      }
+
+      // Handle case where user might be a Mongoose document or have a _id
+      const userId = user.id || user._id || user.userId || user.user.id;
+
+      if (!userId) {
+        console.error('Cannot serialize user - no ID found:', user);
+        return done(new Error('User object has no ID'));
+      }
+
+      console.log('Serializing user with ID:', userId);
+      done(null, userId);
+    } catch (error) {
+      console.error('Error in serializeUser:', error);
+      done(error as Error);
+    }
   }
 
   async deserializeUser(
