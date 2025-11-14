@@ -23,7 +23,9 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
   LoginBodyDto,
@@ -42,6 +44,7 @@ import {
 } from '../dto/forgot-password.dto';
 import { PasswordResetService } from '../services/password-reset.service';
 import { CustomAuthGuard } from '../guards/custom-auth.guard';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -151,6 +154,20 @@ export class AuthController {
     } else {
       return { message: 'No user in session' };
     }
+  }
+  @UseGuards(AuthenticatedGuard)
+  @Post('change-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Change user password' })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiOkResponse({ description: 'Password changed successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid current password' })
+  @ApiBadRequestResponse({ description: 'Invalid request data' })
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.authService.changePassword(req.user.userId, changePasswordDto);
   }
 
   @Get('/logout')

@@ -11,16 +11,14 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findOne(email: string, role: string): Promise<User | null> {
-     const user =await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: { email, role: { hasSome: [role] } },
       include: { companies: true, settings: true },
-     });
+    });
     if (!user) {
-      console.log("user not found")
-      
+      console.log('user not found');
     }
     return user;
-    
   }
   async findAll() {
     return this.prisma.user.findMany();
@@ -53,7 +51,7 @@ export class UsersService {
     return !!user;
   }
   async updateProfile(updateUserDto: UpdateUserDto, id: string) {
-    console.log("user update",updateUserDto)
+    console.log('user update', updateUserDto);
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
       const update = await this.prisma.user.update({
@@ -69,6 +67,7 @@ export class UsersService {
   async updateProfilePicture(imagePath: string | null, id: string) {
     const userToUpdate = await this.findById(id);
     if (userToUpdate) {
+      console.log('upload successful');
       return this.prisma.user.update({
         where: { id },
         data: { image_url: imagePath },

@@ -16,6 +16,7 @@ import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { OAuth2Client } from 'google-auth-library';
 import { connect } from 'http2';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 interface UserInt {
   provider: string;
   providerId: string;
@@ -48,6 +49,54 @@ export class AuthService {
   async validateUserById(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
+    });
+  }
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
+    const { currentPassword, newPassword, confirmPassword } = changePasswordDto;
+
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException(
+        'New password and confirm password do not match',
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isPasswordValid = await this.passwordService.comparePasswords(
+      currentPassword,
+      user?.password || '',
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (
+      await this.passwordService.comparePasswords(
+        newPassword,
+        user?.password || '',
+      )
+    ) {
+      throw new BadRequestException(
+        'New password cannot be the same as the current password',
+      );
+    }
+
+    const hashedPassword = await this.passwordService.hashPassword(newPassword);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
     });
   }
   async validateUser(

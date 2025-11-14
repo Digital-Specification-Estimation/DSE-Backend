@@ -12,7 +12,12 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from '../entities/user.entity';
@@ -47,10 +52,11 @@ export class UsersController {
   @Patch('profile-picture/:id')
   @UseInterceptors(FileInterceptor('image', multerConfig))
   async updateProfilePicture(
-    @UploadedFile() image: any,
+    @UploadedFile() image: Express.Multer.File,
     @Param('id') id: string,
   ) {
     const imagePath = image ? image.path : null;
+    console.log('image path', imagePath);
     return this.userService.updateProfilePicture(imagePath, id);
   }
   @Delete('delete/:id')
@@ -85,7 +91,7 @@ export class UsersController {
   async getPendingRoleRequests() {
     const users = await this.userService.findAll();
     return users
-      .filter(user => user.role_request_approval === 'PENDING')
-      .map(user => new UserEntity(user));
+      .filter((user) => user.role_request_approval === 'PENDING')
+      .map((user) => new UserEntity(user));
   }
 }
