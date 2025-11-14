@@ -22,6 +22,7 @@ import { PassportModule } from '@nestjs/passport';
 import { SessionSerializer } from './auth/utils/Session.serializer';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MailModule } from './mail/mail.module';
+import { VerificationModule } from './verification/verification.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -45,7 +46,8 @@ import { MailModule } from './mail/mail.module';
     ExpenseModule,
     CostControlModule,
     DeductionModule,
-    MailModule
+    MailModule,
+    VerificationModule
   ],
   controllers: [AppController],
   providers: [AppService, SessionSerializer],
