@@ -47,7 +47,7 @@ import { VerificationModule } from './verification/verification.module';
     CostControlModule,
     DeductionModule,
     MailModule,
-    VerificationModule
+    VerificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, SessionSerializer],
