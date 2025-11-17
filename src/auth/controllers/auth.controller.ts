@@ -167,7 +167,7 @@ export class AuthController {
     @Request() req,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    await this.authService.changePassword(req.user.userId, changePasswordDto);
+    await this.authService.changePassword(req.user.id, changePasswordDto);
   }
 
   @Get('/logout')
